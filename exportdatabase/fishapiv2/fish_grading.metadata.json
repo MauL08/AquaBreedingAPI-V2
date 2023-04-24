@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"ab2fa701805c466a9064f7a581426528","collectionName":"fish_grading","type":"collection"}
