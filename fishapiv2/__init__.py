@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, url_for, current_app, Response
+from flask import Flask, render_template, url_for, current_app, Response, request
 from .database.db import initialize_db
 from flask_restful import Api
 from fishapiv2.database.models import FeedHistory, Pond, FeedType, PondActivation, FishDeath, FishTransfer, FishGrading, OptionTable, DailyWaterQuality, WeeklyWaterQuality, PondTreatment
@@ -1244,5 +1244,9 @@ def create_app(test_config=None):
         # response = json.dumps(pondtreatments, default=str)
         # return Response(response, mimetype="application/json", status=200)
         return render_template('pondtreatment/month.html', name='Andri', pondtreatments=enumerate(pondtreatments, start=1), date=date, date_read=date_read)
+
+    @app.route('/test', methods=['GET'])
+    def get_query_string():
+        return request.query_string
 
     return app

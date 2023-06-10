@@ -209,3 +209,17 @@ class Breeder(db.Document):
     name = db.StringField(required=True)
     nik = db.StringField(required=True)
     phone = db.StringField(required=True)
+
+class SeedInventory(db.Document):
+    id_int = db.SequenceField(required=True)
+    # farm_id = db.ReferenceField(Farm, required=True)
+    fish_seed_category = db.StringField(required=True)
+    fish_type = db.StringField(required=True)
+    brand_name = db.StringField(required=True)
+    amount = db.IntField(required=True)
+    weight = db.IntField()
+    length = db.IntField()
+    width = db.StringField()
+    price = db.IntField(required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
