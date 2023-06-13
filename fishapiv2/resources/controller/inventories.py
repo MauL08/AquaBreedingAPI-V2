@@ -11,7 +11,20 @@ from bson.objectid import ObjectId
 class SeedInventoriesApi(Resource):
     def get(self):
         try:
-            pipeline = {"$sort": {"brand_name": 1}},
+            type = request.args.get('type') if request.args.get('type') else ""
+
+            pipeline = [
+                {"$sort": {"id_int": 1}},
+                {
+                    '$match': {
+                        'fish_seed_category': {
+                            '$regex': type,
+                            '$options': 'i'
+                        }
+                    }
+                }
+            ]
+           
             testing = SeedInventory.objects.aggregate(pipeline)
             temp = list(testing)
             response = json.dumps(temp, default=str)
@@ -38,8 +51,8 @@ class SeedInventoriesApi(Resource):
             }
             inventory = SeedInventory(**body).save()
             id = inventory.id
-            response = {"message": "success add seed to inventory", "id": id}
-            response = json.dumps(response, default=str)
+            res = {"message": "success add seed to inventory", "id": id, "data": body}
+            response = json.dumps(res, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": str(e)}
@@ -52,6 +65,8 @@ class SeedInventoryApi(Resource):
             pipeline = {"$match": {"id_int": int(id)}},
             testing = SeedInventory.objects.aggregate(pipeline)
             temp = list(testing)
+            if len(temp) == 0:
+                return Response('no data found', mimetype="application/json", status=200)
             response = json.dumps(temp[0], default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -76,7 +91,7 @@ class SeedInventoryApi(Resource):
                 "price": request.form.get('price', None),
             }
             inventory = SeedInventory.objects.get(id_int = int(id)).update(**body)
-            response = {"message": "success update seed inventory"}
+            response = {"message": "success update seed inventory", "data": body}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:

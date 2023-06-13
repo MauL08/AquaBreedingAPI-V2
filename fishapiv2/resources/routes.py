@@ -14,6 +14,7 @@ from .controller.authentication import *
 from .controller.breeder import *
 from .controller.farm import *
 from .controller.inventories import *
+from .controller.history import *
 
 
 def initialize_routes(api):
@@ -97,3 +98,6 @@ def initialize_routes(api):
     # seed inventory
     api.add_resource(SeedInventoriesApi, '/api/inventory/seed')
     api.add_resource(SeedInventoryApi, '/api/inventory/seed/<id>')
+
+    # history
+    api.add_resource(SeedHistoryApi, '/api/history/inventory/seed')
