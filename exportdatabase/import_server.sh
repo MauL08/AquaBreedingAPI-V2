@@ -1,1 +1,1 @@
-mongorestore -d fishapiv2 /var/www/html/fishapiv2/exportdatabase/fishapiv2
+mongorestore -d fishapiv3 /var/www/html/fishapiv3/exportdatabase/fishapiv3

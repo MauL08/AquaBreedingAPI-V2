@@ -1,5 +1,5 @@
 from flask import Response, request
-from fishapiv2.database.models import DailyWaterQuality, Pond, PondActivation
+from fishapiv3.database.models import DailyWaterQuality, Pond, PondActivation
 from flask_restful import Resource
 import datetime
 import json

@@ -2,7 +2,7 @@ import os
 from flask import Flask, render_template, url_for, current_app, Response, request
 from .database.db import initialize_db
 from flask_restful import Api
-from fishapiv2.database.models import FeedHistory, Pond, FeedType, PondActivation, FishDeath, FishTransfer, FishGrading, OptionTable, DailyWaterQuality, WeeklyWaterQuality, PondTreatment
+from fishapiv3.database.models import FeedHistory, Pond, FeedType, PondActivation, FishDeath, FishTransfer, FishGrading, OptionTable, DailyWaterQuality, WeeklyWaterQuality, PondTreatment
 from .resources.helper import *
 from .resources.routes import initialize_routes
 import json
@@ -20,7 +20,7 @@ def create_app(test_config=None):
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=365)
     app.config['JWT_BLACKLIST_ENABLED'] = True
     app.config['PROPAGATE_EXCEPTIONS'] = True
-    app.config['MONGODB_SETTINGS'] = {'db':'fishapiv2', 'alias':'default'}
+    app.config['MONGODB_SETTINGS'] = {'db':'fishapiv3', 'alias':'default'}
     jwt = JWTManager(app)
     app.config.from_pyfile('settings.cfg', silent=False)
 

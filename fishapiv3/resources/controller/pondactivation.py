@@ -1,8 +1,8 @@
 from flask import Response, request
-from fishapiv2.database.models import *
+from fishapiv3.database.models import *
 from flask_restful import Resource
-from fishapiv2.database.db import db
-from fishapiv2.resources.helper import getYearToday
+from fishapiv3.database.db import db
+from fishapiv3.resources.helper import getYearToday
 import datetime
 import json
 from bson.json_util import dumps
@@ -308,6 +308,7 @@ class PondActivationApi(Resource):
             "isFinish": False,
             "isWaterPreparation": isWaterPreparation,
             "water_level": water_level,
+            # "fish_seed_amount": request.form.get('fish_seed_amount', None),
             "activated_at": activated_at
         }
         pondActivation = PondActivation(**pond_activation_data).save()
@@ -336,7 +337,7 @@ class PondActivationApi(Resource):
                 "type_log": "activation",
                 "fish_type": fish['type'],
                 "fish_amount": fish['amount'],
-                "fish_total_weight": fish['weight']
+                "fish_total_weight": fish['weight'],
             }
             fishlog = FishLog(**data).save()
         response = {"message": "success to activation pond"}

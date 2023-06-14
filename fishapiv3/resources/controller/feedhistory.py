@@ -1,7 +1,7 @@
 from flask import Response, request
-from fishapiv2.database.models import *
+from fishapiv3.database.models import *
 from flask_restful import Resource
-from fishapiv2.database.db import db
+from fishapiv3.database.db import db
 from datetime import datetime
 import calendar
 from datetime import timedelta

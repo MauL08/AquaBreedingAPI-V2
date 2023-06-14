@@ -1,7 +1,7 @@
 from flask import Flask, Response, request, jsonify, current_app, url_for, send_from_directory, make_response
-from fishapiv2.database.models import *
+from fishapiv3.database.models import *
 from flask_restful import Resource
-from fishapiv2.resources.helper import *
+from fishapiv3.resources.helper import *
 from datetime import datetime
 import json
 from flask_jwt_extended import jwt_required
