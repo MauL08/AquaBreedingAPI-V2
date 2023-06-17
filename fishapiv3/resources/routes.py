@@ -99,5 +99,25 @@ def initialize_routes(api):
     api.add_resource(SeedInventoriesApi, '/api/inventory/seed')
     api.add_resource(SeedInventoryApi, '/api/inventory/seed/<id>')
 
+    # feed inventory
+    api.add_resource(FeedInventoriesApi, '/api/inventory/feed')
+    api.add_resource(FeedInventoryApi, '/api/inventory/feed/<id>')
+
+    # suplemen inventory
+    api.add_resource(SuplemenInventoriesApi, '/api/inventory/suplemen')
+    api.add_resource(SuplemenInventoryApi, '/api/inventory/suplemen/<id>')
+
+    # electric inventory
+    api.add_resource(ElectricInventoriesApi, '/api/inventory/electric')
+    api.add_resource(ElectricInventoryApi, '/api/inventory/electric/<id>')
+
+    # asset inventory
+    api.add_resource(AssetInventoriesApi, '/api/inventory/asset')
+    api.add_resource(AssetInventoryApi, '/api/inventory/asset/<id>')
+
     # history
     api.add_resource(SeedHistoryApi, '/api/history/inventory/seed')
+    api.add_resource(FeedHistoryApi, '/api/history/inventory/feed')
+    api.add_resource(SuplemenHistoryApi, '/api/history/inventory/suplemen')
+    api.add_resource(ElectricHistoryApi, '/api/history/inventory/electric')
+    api.add_resource(AssetHistoryApi, '/api/history/inventory/asset')

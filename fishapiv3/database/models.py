@@ -249,6 +249,14 @@ class FeedInventory(db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
+class FeedHistory(db.Document):
+    fish_seed_id = db.ReferenceField(SeedInventory, required=True)
+    original_amount = db.IntField(required=True)
+    usage = db.IntField(required=True)
+    pond = db.StringField(required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
+
 class SuplemenInventory(db.Document):
     id_int = db.SequenceField(required=True)
     function = db.StringField(required=True)
@@ -263,6 +271,14 @@ class SuplemenInventory(db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
+class SuplemenHistory(db.Document):
+    fish_seed_id = db.ReferenceField(SeedInventory, required=True)
+    original_amount = db.IntField(required=True)
+    usage = db.IntField(required=True)
+    pond = db.StringField(required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
+
 class ElectricInventory(db.Document):
     id_int = db.SequenceField(required=True)
     name = db.StringField(required=True)
@@ -270,6 +286,14 @@ class ElectricInventory(db.Document):
     type = db.StringField(required=True)
     price = db.IntField(required=True)
     image = db.StringField(required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
+
+class ElectricHistory(db.Document):
+    fish_seed_id = db.ReferenceField(SeedInventory, required=True)
+    original_amount = db.IntField(required=True)
+    usage = db.IntField(required=True)
+    pond = db.StringField(required=True)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
@@ -281,5 +305,13 @@ class AssetInventory(db.Document):
     amount = db.IntField(required=True)
     price = db.IntField(required=True)
     image = db.StringField(required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
+
+class AssetHistory(db.Document):
+    fish_seed_id = db.ReferenceField(SeedInventory, required=True)
+    original_amount = db.IntField(required=True)
+    usage = db.IntField(required=True)
+    pond = db.StringField(required=True)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
