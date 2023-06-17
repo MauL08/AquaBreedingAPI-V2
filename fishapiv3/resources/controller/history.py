@@ -80,7 +80,7 @@ class SeedHistoryApi(Resource):
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
         
-class FeedHistoryApi(Resource):
+class FeedFishHistoryApi(Resource):
     def get(self):
         try:
             start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else ""

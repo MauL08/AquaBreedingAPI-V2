@@ -117,7 +117,7 @@ def initialize_routes(api):
 
     # history
     api.add_resource(SeedHistoryApi, '/api/history/inventory/seed')
-    api.add_resource(FeedHistoryApi, '/api/history/inventory/feed')
+    api.add_resource(FeedFishHistoryApi, '/api/history/inventory/feed')
     api.add_resource(SuplemenHistoryApi, '/api/history/inventory/suplemen')
     api.add_resource(ElectricHistoryApi, '/api/history/inventory/electric')
     api.add_resource(AssetHistoryApi, '/api/history/inventory/asset')
