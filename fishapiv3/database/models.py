@@ -250,7 +250,7 @@ class FeedInventory(db.Document):
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 class FeedHistory(db.Document):
-    fish_seed_id = db.ReferenceField(SeedInventory, required=True)
+    fish_feed_id = db.ReferenceField(FeedInventory, required=True)
     original_amount = db.IntField(required=True)
     usage = db.IntField(required=True)
     pond = db.StringField(required=True)
@@ -272,7 +272,7 @@ class SuplemenInventory(db.Document):
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 class SuplemenHistory(db.Document):
-    fish_seed_id = db.ReferenceField(SeedInventory, required=True)
+    fish_suplemen_id = db.ReferenceField(SuplemenInventory, required=True)
     original_amount = db.IntField(required=True)
     usage = db.IntField(required=True)
     pond = db.StringField(required=True)
@@ -289,13 +289,13 @@ class ElectricInventory(db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
-class ElectricHistory(db.Document):
-    fish_seed_id = db.ReferenceField(SeedInventory, required=True)
-    original_amount = db.IntField(required=True)
-    usage = db.IntField(required=True)
-    pond = db.StringField(required=True)
-    created_at = db.DateTimeField(default=datetime.datetime.now)
-    updated_at = db.DateTimeField(default=datetime.datetime.now)
+# class ElectricHistory(db.Document):
+#     fish_seed_id = db.ReferenceField(SeedInventory, required=True)
+#     original_amount = db.IntField(required=True)
+#     usage = db.IntField(required=True)
+#     pond = db.StringField(required=True)
+#     created_at = db.DateTimeField(default=datetime.datetime.now)
+#     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 class AssetInventory(db.Document):
     id_int = db.SequenceField(required=True)
@@ -309,7 +309,7 @@ class AssetInventory(db.Document):
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 class AssetHistory(db.Document):
-    fish_seed_id = db.ReferenceField(SeedInventory, required=True)
+    fish_asset_id = db.ReferenceField(AssetInventory, required=True)
     original_amount = db.IntField(required=True)
     usage = db.IntField(required=True)
     pond = db.StringField(required=True)

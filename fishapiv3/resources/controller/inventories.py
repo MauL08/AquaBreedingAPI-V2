@@ -67,7 +67,9 @@ class SeedInventoryApi(Resource):
             testing = SeedInventory.objects.aggregate(pipeline)
             temp = list(testing)
             if len(temp) == 0:
-                return Response('no data found', mimetype="application/json", status=200)
+                res = {"message": 'no data found'}
+                response = json.dumps(res, default=str)
+                return Response(response, mimetype="application/json", status=200)
             response = json.dumps(temp[0], default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -123,7 +125,7 @@ class FeedInventoriesApi(Resource):
                 {"$sort": {"id_int": 1}},
                 {
                     '$match': {
-                        'fish_seed_category': {
+                        'feed_category': {
                             '$regex': type,
                             '$options': 'i'
                         }
@@ -131,7 +133,7 @@ class FeedInventoriesApi(Resource):
                 }
             ]
            
-            testing = SeedInventory.objects.aggregate(pipeline)
+            testing = FeedInventory.objects.aggregate(pipeline)
             temp = list(testing)
             response = json.dumps(temp, default=str)
             return Response(response, mimetype="application/json", status=200)
@@ -146,19 +148,21 @@ class FeedInventoriesApi(Resource):
             # farm = str(current_user['farm_id'])
             body = {
                 # "farm_id": farm,
-                "fish_seed_category": request.form.get('fish_seed_category', None),
-                "fish_type": request.form.get('fish_type', None),
+                "feed_category": request.form.get('feed_category', None),
                 "brand_name": request.form.get('brand_name', None),
-                "amount": request.form.get('amount', None),
-                "weight": request.form.get('weight', None),
-                "length": request.form.get('length', None),
-                "width": request.form.get('width', None),
+                "description": request.form.get('description', None),
                 "price": request.form.get('price', None),
-                "image": request.form.get('image', None)
+                "amount": request.form.get('amount', None),
+                "producer": request.form.get('producer', None),
+                "protein": request.form.get('protein', None),
+                "carbohydrate": request.form.get('carbohydrate', None),
+                "min_expired_period": request.form.get('min_expired_period', None),
+                "max_expired_period": request.form.get('max_expired_period', None),
+                "image": request.form.get('image', None),
             }
-            inventory = SeedInventory(**body).save()
+            inventory = FeedInventory(**body).save()
             id = inventory.id
-            res = {"message": "success add seed to inventory", "id": id, "data": body}
+            res = {"message": "success add feed to inventory", "id": id, "data": body}
             response = json.dumps(res, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -170,10 +174,12 @@ class FeedInventoryApi(Resource):
     def get(self, id):
         try:
             pipeline = {"$match": {"id_int": int(id)}},
-            testing = SeedInventory.objects.aggregate(pipeline)
+            testing = FeedInventory.objects.aggregate(pipeline)
             temp = list(testing)
             if len(temp) == 0:
-                return Response('no data found', mimetype="application/json", status=200)
+                res = {"message": 'no data found'}
+                response = json.dumps(res, default=str)
+                return Response(response, mimetype="application/json", status=200)
             response = json.dumps(temp[0], default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -188,18 +194,20 @@ class FeedInventoryApi(Resource):
             body = {
                 # "farm_id": farm,
                 "id_int": int(id),
-                "fish_seed_category": request.form.get('fish_seed_category', None),
-                "fish_type": request.form.get('fish_type', None),
+                "feed_category": request.form.get('feed_category', None),
                 "brand_name": request.form.get('brand_name', None),
-                "amount": request.form.get('amount', None),
-                "weight": request.form.get('weight', None),
-                "length": request.form.get('length', None),
-                "width": request.form.get('width', None),
+                "description": request.form.get('description', None),
                 "price": request.form.get('price', None),
-                "image": request.form.get('image', None)
+                "amount": request.form.get('amount', None),
+                "producer": request.form.get('producer', None),
+                "protein": request.form.get('protein', None),
+                "carbohydrate": request.form.get('carbohydrate', None),
+                "min_expired_period": request.form.get('min_expired_period', None),
+                "max_expired_period": request.form.get('max_expired_period', None),
+                "image": request.form.get('image', None),
             }
-            inventory = SeedInventory.objects.get(id_int = int(id)).update(**body)
-            response = {"message": "success update seed inventory", "data": body}
+            inventory = FeedInventory.objects.get(id_int = int(id)).update(**body)
+            response = {"message": "success update feed inventory", "data": body}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -211,8 +219,8 @@ class FeedInventoryApi(Resource):
         try:
             # current_user = get_jwt_identity()
             # farm = str(current_user['farm_id'])
-            inventory = SeedInventory.objects.get(id_int = int(id)).delete()
-            response = {"message": "success delete seed inventory"}
+            inventory = FeedInventory.objects.get(id_int = int(id)).delete()
+            response = {"message": "success delete feed inventory"}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -229,7 +237,7 @@ class SuplemenInventoriesApi(Resource):
                 {"$sort": {"id_int": 1}},
                 {
                     '$match': {
-                        'fish_seed_category': {
+                        'function': {
                             '$regex': type,
                             '$options': 'i'
                         }
@@ -237,7 +245,7 @@ class SuplemenInventoriesApi(Resource):
                 }
             ]
            
-            testing = SeedInventory.objects.aggregate(pipeline)
+            testing = SuplemenInventory.objects.aggregate(pipeline)
             temp = list(testing)
             response = json.dumps(temp, default=str)
             return Response(response, mimetype="application/json", status=200)
@@ -252,19 +260,19 @@ class SuplemenInventoriesApi(Resource):
             # farm = str(current_user['farm_id'])
             body = {
                 # "farm_id": farm,
-                "fish_seed_category": request.form.get('fish_seed_category', None),
-                "fish_type": request.form.get('fish_type', None),
-                "brand_name": request.form.get('brand_name', None),
-                "amount": request.form.get('amount', None),
-                "weight": request.form.get('weight', None),
-                "length": request.form.get('length', None),
-                "width": request.form.get('width', None),
+                "function": request.form.get('function', None),
+                "name": request.form.get('name', None),
+                "description": request.form.get('description', None),
                 "price": request.form.get('price', None),
+                "amount": request.form.get('amount', None),
+                "type": request.form.get('type', None),
+                "min_expired_period": request.form.get('min_expired_period', None),
+                "max_expired_period": request.form.get('max_expired_period', None),
                 "image": request.form.get('image', None)
             }
-            inventory = SeedInventory(**body).save()
+            inventory = SuplemenInventory(**body).save()
             id = inventory.id
-            res = {"message": "success add seed to inventory", "id": id, "data": body}
+            res = {"message": "success add suplemen to inventory", "id": id, "data": body}
             response = json.dumps(res, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -276,10 +284,12 @@ class SuplemenInventoryApi(Resource):
     def get(self, id):
         try:
             pipeline = {"$match": {"id_int": int(id)}},
-            testing = SeedInventory.objects.aggregate(pipeline)
+            testing = SuplemenInventory.objects.aggregate(pipeline)
             temp = list(testing)
             if len(temp) == 0:
-                return Response('no data found', mimetype="application/json", status=200)
+                res = {"message": 'no data found'}
+                response = json.dumps(res, default=str)
+                return Response(response, mimetype="application/json", status=200)
             response = json.dumps(temp[0], default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -294,18 +304,18 @@ class SuplemenInventoryApi(Resource):
             body = {
                 # "farm_id": farm,
                 "id_int": int(id),
-                "fish_seed_category": request.form.get('fish_seed_category', None),
-                "fish_type": request.form.get('fish_type', None),
-                "brand_name": request.form.get('brand_name', None),
-                "amount": request.form.get('amount', None),
-                "weight": request.form.get('weight', None),
-                "length": request.form.get('length', None),
-                "width": request.form.get('width', None),
+                "function": request.form.get('function', None),
+                "name": request.form.get('name', None),
+                "description": request.form.get('description', None),
                 "price": request.form.get('price', None),
+                "amount": request.form.get('amount', None),
+                "type": request.form.get('type', None),
+                "min_expired_amount": request.form.get('min_expired_amount', None),
+                "max_expired_amount": request.form.get('max_expired_amount', None),
                 "image": request.form.get('image', None)
             }
-            inventory = SeedInventory.objects.get(id_int = int(id)).update(**body)
-            response = {"message": "success update seed inventory", "data": body}
+            inventory = SuplemenInventory.objects.get(id_int = int(id)).update(**body)
+            response = {"message": "success update suplemen inventory", "data": body}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -317,8 +327,8 @@ class SuplemenInventoryApi(Resource):
         try:
             # current_user = get_jwt_identity()
             # farm = str(current_user['farm_id'])
-            inventory = SeedInventory.objects.get(id_int = int(id)).delete()
-            response = {"message": "success delete seed inventory"}
+            inventory = SuplemenInventory.objects.get(id_int = int(id)).delete()
+            response = {"message": "success delete suplemen inventory"}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -329,18 +339,20 @@ class SuplemenInventoryApi(Resource):
 class ElectricInventoriesApi(Resource):
     def get(self):
         try:
-            type = request.args.get('type') if request.args.get('type') else ""
+            start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else ""
+            end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else ""
+
 
             pipeline = [
                 {"$sort": {"id_int": 1}},
                 {
                     '$match': {
-                        'fish_seed_category': {
-                            '$regex': type,
-                            '$options': 'i'
+                        'created_at': {
+                            '$gte': start_date,
+                            '$lte': end_date,
                         }
                     }
-                }
+                },
             ]
            
             testing = SeedInventory.objects.aggregate(pipeline)
@@ -358,19 +370,15 @@ class ElectricInventoriesApi(Resource):
             # farm = str(current_user['farm_id'])
             body = {
                 # "farm_id": farm,
-                "fish_seed_category": request.form.get('fish_seed_category', None),
-                "fish_type": request.form.get('fish_type', None),
-                "brand_name": request.form.get('brand_name', None),
-                "amount": request.form.get('amount', None),
-                "weight": request.form.get('weight', None),
-                "length": request.form.get('length', None),
-                "width": request.form.get('width', None),
+                "name": request.form.get('name', None),
                 "price": request.form.get('price', None),
-                "image": request.form.get('image', None)
+                "type": request.form.get('type', None),
+                "daya": request.form.get('daya', None),
+                "image": request.form.get('image', None),
             }
-            inventory = SeedInventory(**body).save()
+            inventory = ElectricInventory(**body).save()
             id = inventory.id
-            res = {"message": "success add seed to inventory", "id": id, "data": body}
+            res = {"message": "success add electric to inventory", "id": id, "data": body}
             response = json.dumps(res, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -382,10 +390,12 @@ class ElectricInventoryApi(Resource):
     def get(self, id):
         try:
             pipeline = {"$match": {"id_int": int(id)}},
-            testing = SeedInventory.objects.aggregate(pipeline)
+            testing = ElectricInventory.objects.aggregate(pipeline)
             temp = list(testing)
             if len(temp) == 0:
-                return Response('no data found', mimetype="application/json", status=200)
+                res = {"message": 'no data found'}
+                response = json.dumps(res, default=str)
+                return Response(response, mimetype="application/json", status=200)
             response = json.dumps(temp[0], default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -400,18 +410,14 @@ class ElectricInventoryApi(Resource):
             body = {
                 # "farm_id": farm,
                 "id_int": int(id),
-                "fish_seed_category": request.form.get('fish_seed_category', None),
-                "fish_type": request.form.get('fish_type', None),
-                "brand_name": request.form.get('brand_name', None),
-                "amount": request.form.get('amount', None),
-                "weight": request.form.get('weight', None),
-                "length": request.form.get('length', None),
-                "width": request.form.get('width', None),
+                "name": request.form.get('name', None),
                 "price": request.form.get('price', None),
-                "image": request.form.get('image', None)
+                "type": request.form.get('type', None),
+                "daya": request.form.get('daya', None),
+                "image": request.form.get('image', None),
             }
-            inventory = SeedInventory.objects.get(id_int = int(id)).update(**body)
-            response = {"message": "success update seed inventory", "data": body}
+            inventory = ElectricInventory.objects.get(id_int = int(id)).update(**body)
+            response = {"message": "success update electric inventory", "data": body}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -423,8 +429,8 @@ class ElectricInventoryApi(Resource):
         try:
             # current_user = get_jwt_identity()
             # farm = str(current_user['farm_id'])
-            inventory = SeedInventory.objects.get(id_int = int(id)).delete()
-            response = {"message": "success delete seed inventory"}
+            inventory = ElectricInventory.objects.get(id_int = int(id)).delete()
+            response = {"message": "success delete electric inventory"}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -441,7 +447,7 @@ class AssetInventoriesApi(Resource):
                 {"$sort": {"id_int": 1}},
                 {
                     '$match': {
-                        'fish_seed_category': {
+                        'asset_category': {
                             '$regex': type,
                             '$options': 'i'
                         }
@@ -449,7 +455,7 @@ class AssetInventoriesApi(Resource):
                 }
             ]
            
-            testing = SeedInventory.objects.aggregate(pipeline)
+            testing = AssetInventory.objects.aggregate(pipeline)
             temp = list(testing)
             response = json.dumps(temp, default=str)
             return Response(response, mimetype="application/json", status=200)
@@ -464,19 +470,16 @@ class AssetInventoriesApi(Resource):
             # farm = str(current_user['farm_id'])
             body = {
                 # "farm_id": farm,
-                "fish_seed_category": request.form.get('fish_seed_category', None),
-                "fish_type": request.form.get('fish_type', None),
-                "brand_name": request.form.get('brand_name', None),
+                "asset_category": request.form.get('asset_category', None),
+                "name": request.form.get('name', None),
+                "description": request.form.get('description', None),
                 "amount": request.form.get('amount', None),
-                "weight": request.form.get('weight', None),
-                "length": request.form.get('length', None),
-                "width": request.form.get('width', None),
                 "price": request.form.get('price', None),
-                "image": request.form.get('image', None)
+                "image": request.form.get('image', None),
             }
-            inventory = SeedInventory(**body).save()
+            inventory = AssetInventory(**body).save()
             id = inventory.id
-            res = {"message": "success add seed to inventory", "id": id, "data": body}
+            res = {"message": "success add asset to inventory", "id": id, "data": body}
             response = json.dumps(res, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -488,10 +491,12 @@ class AssetInventoryApi(Resource):
     def get(self, id):
         try:
             pipeline = {"$match": {"id_int": int(id)}},
-            testing = SeedInventory.objects.aggregate(pipeline)
+            testing = AssetInventory.objects.aggregate(pipeline)
             temp = list(testing)
             if len(temp) == 0:
-                return Response('no data found', mimetype="application/json", status=200)
+                res = {"message": 'no data found'}
+                response = json.dumps(res, default=str)
+                return Response(response, mimetype="application/json", status=200)
             response = json.dumps(temp[0], default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -506,18 +511,15 @@ class AssetInventoryApi(Resource):
             body = {
                 # "farm_id": farm,
                 "id_int": int(id),
-                "fish_seed_category": request.form.get('fish_seed_category', None),
-                "fish_type": request.form.get('fish_type', None),
-                "brand_name": request.form.get('brand_name', None),
+                "asset_category": request.form.get('asset_category', None),
+                "name": request.form.get('name', None),
+                "description": request.form.get('description', None),
                 "amount": request.form.get('amount', None),
-                "weight": request.form.get('weight', None),
-                "length": request.form.get('length', None),
-                "width": request.form.get('width', None),
                 "price": request.form.get('price', None),
-                "image": request.form.get('image', None)
+                "image": request.form.get('image', None),
             }
-            inventory = SeedInventory.objects.get(id_int = int(id)).update(**body)
-            response = {"message": "success update seed inventory", "data": body}
+            inventory = AssetInventory.objects.get(id_int = int(id)).update(**body)
+            response = {"message": "success update asset inventory", "data": body}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -529,8 +531,8 @@ class AssetInventoryApi(Resource):
         try:
             # current_user = get_jwt_identity()
             # farm = str(current_user['farm_id'])
-            inventory = SeedInventory.objects.get(id_int = int(id)).delete()
-            response = {"message": "success delete seed inventory"}
+            inventory = AssetInventory.objects.get(id_int = int(id)).delete()
+            response = {"message": "success delete asset inventory"}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
