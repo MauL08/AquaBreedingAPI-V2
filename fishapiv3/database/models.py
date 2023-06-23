@@ -218,7 +218,7 @@ class SeedInventory(db.Document):
     brand_name = db.StringField(required=True)
     amount = db.IntField(required=True)
     weight = db.IntField()
-    length = db.IntField()
+    # length = db.IntField()
     width = db.StringField()
     price = db.IntField(required=True)
     image = db.StringField(required=True)

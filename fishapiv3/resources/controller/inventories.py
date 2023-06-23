@@ -27,7 +27,10 @@ class SeedInventoriesApi(Resource):
            
             testing = SeedInventory.objects.aggregate(pipeline)
             temp = list(testing)
-            response = json.dumps(temp, default=str)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp,
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": e}
@@ -45,7 +48,6 @@ class SeedInventoriesApi(Resource):
                 "brand_name": request.form.get('brand_name', None),
                 "amount": request.form.get('amount', None),
                 "weight": request.form.get('weight', None),
-                "length": request.form.get('length', None),
                 "width": request.form.get('width', None),
                 "price": request.form.get('price', None),
                 "image": request.form.get('image', None)
@@ -70,7 +72,10 @@ class SeedInventoryApi(Resource):
                 res = {"message": 'no data found'}
                 response = json.dumps(res, default=str)
                 return Response(response, mimetype="application/json", status=200)
-            response = json.dumps(temp[0], default=str)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp[0],
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": e}
@@ -89,7 +94,6 @@ class SeedInventoryApi(Resource):
                 "brand_name": request.form.get('brand_name', None),
                 "amount": request.form.get('amount', None),
                 "weight": request.form.get('weight', None),
-                "length": request.form.get('length', None),
                 "width": request.form.get('width', None),
                 "price": request.form.get('price', None),
                 "image": request.form.get('image', None)
