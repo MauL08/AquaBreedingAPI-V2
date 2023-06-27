@@ -281,21 +281,13 @@ class SuplemenHistory(db.Document):
 
 class ElectricInventory(db.Document):
     id_int = db.SequenceField(required=True)
-    name = db.StringField(required=True)
-    daya = db.IntField()
     type = db.StringField(required=True)
+    name = db.StringField(required=True)
+    daya = db.StringField()
     price = db.IntField(required=True)
     image = db.StringField(required=True)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
-
-# class ElectricHistory(db.Document):
-#     fish_seed_id = db.ReferenceField(SeedInventory, required=True)
-#     original_amount = db.IntField(required=True)
-#     usage = db.IntField(required=True)
-#     pond = db.StringField(required=True)
-#     created_at = db.DateTimeField(default=datetime.datetime.now)
-#     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 class AssetInventory(db.Document):
     id_int = db.SequenceField(required=True)
@@ -305,13 +297,5 @@ class AssetInventory(db.Document):
     amount = db.IntField(required=True)
     price = db.IntField(required=True)
     image = db.StringField(required=True)
-    created_at = db.DateTimeField(default=datetime.datetime.now)
-    updated_at = db.DateTimeField(default=datetime.datetime.now)
-
-class AssetHistory(db.Document):
-    fish_asset_id = db.ReferenceField(AssetInventory, required=True)
-    original_amount = db.IntField(required=True)
-    usage = db.IntField(required=True)
-    pond = db.StringField(required=True)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)

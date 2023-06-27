@@ -139,7 +139,10 @@ class FeedInventoriesApi(Resource):
            
             testing = FeedInventory.objects.aggregate(pipeline)
             temp = list(testing)
-            response = json.dumps(temp, default=str)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp,
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": e}
@@ -184,7 +187,10 @@ class FeedInventoryApi(Resource):
                 res = {"message": 'no data found'}
                 response = json.dumps(res, default=str)
                 return Response(response, mimetype="application/json", status=200)
-            response = json.dumps(temp[0], default=str)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp[0],
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": e}
@@ -251,7 +257,10 @@ class SuplemenInventoriesApi(Resource):
            
             testing = SuplemenInventory.objects.aggregate(pipeline)
             temp = list(testing)
-            response = json.dumps(temp, default=str)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp,
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": e}
@@ -294,7 +303,10 @@ class SuplemenInventoryApi(Resource):
                 res = {"message": 'no data found'}
                 response = json.dumps(res, default=str)
                 return Response(response, mimetype="application/json", status=200)
-            response = json.dumps(temp[0], default=str)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp[0],
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": e}
@@ -343,25 +355,37 @@ class SuplemenInventoryApi(Resource):
 class ElectricInventoriesApi(Resource):
     def get(self):
         try:
-            start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else ""
-            end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else ""
-
+            year = request.args.get('year') if request.args.get('year') else 2023
+            type = request.args.get('type') if request.args.get('type') else ""
 
             pipeline = [
                 {"$sort": {"id_int": 1}},
                 {
                     '$match': {
-                        'created_at': {
-                            '$gte': start_date,
-                            '$lte': end_date,
+                        '$expr': {
+                            '$eq': [
+                                {'$year': '$created_at'},
+                                int(year)
+                            ]
                         }
                     }
                 },
+                {
+                    '$match': {
+                        'type': {
+                            '$regex': type,
+                            '$options': 'i'
+                        }
+                    }
+                }
             ]
            
-            testing = SeedInventory.objects.aggregate(pipeline)
+            testing = ElectricInventory.objects.aggregate(pipeline)
             temp = list(testing)
-            response = json.dumps(temp, default=str)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp,
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": e}
@@ -400,7 +424,10 @@ class ElectricInventoryApi(Resource):
                 res = {"message": 'no data found'}
                 response = json.dumps(res, default=str)
                 return Response(response, mimetype="application/json", status=200)
-            response = json.dumps(temp[0], default=str)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp[0],
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": e}
