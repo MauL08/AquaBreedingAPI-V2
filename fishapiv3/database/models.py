@@ -263,7 +263,7 @@ class SuplemenInventory(db.Document):
     name = db.StringField(required=True)
     description = db.StringField(required=True)
     price = db.IntField(required=True)
-    amount = db.IntField(required=True)
+    amount = db.FloatField(required=True)
     type = db.StringField(required=True)
     min_expired_period = db.IntField(required=True)
     max_expired_period = db.IntField(required=True)
@@ -273,8 +273,8 @@ class SuplemenInventory(db.Document):
 
 class SuplemenHistory(db.Document):
     fish_suplemen_id = db.ReferenceField(SuplemenInventory, required=True)
-    original_amount = db.IntField(required=True)
-    usage = db.IntField(required=True)
+    original_amount = db.FloatField(required=True)
+    usage = db.FloatField(required=True)
     pond = db.StringField(required=True)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)

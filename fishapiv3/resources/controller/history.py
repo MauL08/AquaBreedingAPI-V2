@@ -12,8 +12,8 @@ from ...database.models import *
 class SeedHistoryApi(Resource):
     def get(self):
         try:
-            start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else ""
-            end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else ""
+            start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else datetime.datetime.strptime("2023-01-01", '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else datetime.datetime.strptime("2030-01-01", '%Y-%m-%d')
 
             pipeline = [
                 {
@@ -48,7 +48,10 @@ class SeedHistoryApi(Resource):
 
             testing = SeedHistory.objects.aggregate(pipeline)
             temp = list(testing)
-            response = json.dumps(temp, default=str)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp,
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": e}
@@ -83,8 +86,8 @@ class SeedHistoryApi(Resource):
 class FeedFishHistoryApi(Resource):
     def get(self):
         try:
-            start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else ""
-            end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else ""
+            start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else datetime.datetime.strptime("2023-01-01", '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else datetime.datetime.strptime("2030-01-01", '%Y-%m-%d')
 
             pipeline = [
                 {
@@ -95,31 +98,42 @@ class FeedFishHistoryApi(Resource):
                         }
                     }
                 },
-                {"$sort": {"fish_seed_id": 1}},
+                {"$sort": {"fish_feed_id": 1}},
                 {'$lookup': {
-                    'from': 'seed_inventory',
-                    'let': {"fishseedid": "$fish_seed_id"},
+                    'from': 'feed_inventory',
+                    'let': {"fishfeedid": "$fish_feed_id"},
                     'pipeline': [
-                        {'$match': {'$expr': {'$eq': ['$_id', '$$fishseedid']}}},
+                        {'$match': {'$expr': {'$eq': ['$_id', '$$fishfeedid']}}},
                         {"$project": {
                             "_id": 1,
-                            "fish_seed_category": 1,
-                            "fish_type": 1,
+                            "id_int": 1,
+                            "feed_category": 1,
                             "brand_name": 1,
+                            "description": 1,
                             "price": 1,
+                            "amount": 1,
+                            "producer": 1,
+                            "protein": 1,
+                            "carbohydrate": 1,
+                            "min_expired_period": 1,
+                            "max_expired_period": 1,
+                            "image": 1,
                             "created_at": 1,
                         }}
                     ],
-                    'as': 'seed'
+                    'as': 'feed'
                 }},
                 {"$addFields": {
-                    "seed": {"$first": "$seed"},
+                    "feed": {"$first": "$feed"},
                 }},
             ]
 
-            testing = SeedHistory.objects.aggregate(pipeline)
+            testing = FeedHistory.objects.aggregate(pipeline)
             temp = list(testing)
-            response = json.dumps(temp, default=str)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp,
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": e}
@@ -129,21 +143,21 @@ class FeedFishHistoryApi(Resource):
     def post(self):
         try:
             body = {
-                "fish_seed_id": request.form.get('fish_seed_id', None),
+                "fish_feed_id": request.form.get('fish_feed_id', None),
                 "original_amount": request.form.get('original_amount', None),
                 "usage": request.form.get('usage', None),
                 "pond": request.form.get('pond', None),
             }
 
-            # update seed inventory table
-            get_seed_by_id = SeedInventory.objects.get(id=request.form.get('fish_seed_id', None))
-            get_seed_by_id.amount -= int(request.form.get('usage', None))
-            get_seed_by_id.save()
+            # update feed inventory table
+            get_feed_by_id = FeedInventory.objects.get(id=request.form.get('fish_feed_id', None))
+            get_feed_by_id.amount -= int(request.form.get('usage', None))
+            get_feed_by_id.save()
             
             # save body to history table
-            seed_history = SeedHistory(**body).save()
-            id = seed_history.id
-            res = {"message": "success add seed history","id": id, "data": body}
+            feed_history = FeedHistory(**body).save()
+            id = feed_history.id
+            res = {"message": "success add feed history","id": id, "data": body}
             response = json.dumps(res, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
@@ -154,8 +168,8 @@ class FeedFishHistoryApi(Resource):
 class SuplemenHistoryApi(Resource):
     def get(self):
         try:
-            start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else ""
-            end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else ""
+            start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else datetime.datetime.strptime("2023-01-01", '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else datetime.datetime.strptime("2030-01-01", '%Y-%m-%d')
 
             pipeline = [
                 {
@@ -166,31 +180,40 @@ class SuplemenHistoryApi(Resource):
                         }
                     }
                 },
-                {"$sort": {"fish_seed_id": 1}},
+                {"$sort": {"fish_suplemen_id": 1}},
                 {'$lookup': {
-                    'from': 'seed_inventory',
-                    'let': {"fishseedid": "$fish_seed_id"},
+                    'from': 'suplemen_inventory',
+                    'let': {"fishsuplemenid": "$fish_suplemen_id"},
                     'pipeline': [
-                        {'$match': {'$expr': {'$eq': ['$_id', '$$fishseedid']}}},
+                        {'$match': {'$expr': {'$eq': ['$_id', '$$fishsuplemenid']}}},
                         {"$project": {
                             "_id": 1,
-                            "fish_seed_category": 1,
-                            "fish_type": 1,
-                            "brand_name": 1,
+                            "id_int": 1,
+                            "function": 1,
+                            "name": 1,
+                            "description": 1,
                             "price": 1,
+                            "amount": 1,
+                            "type": 1,
+                            "min_expired_period": 1,
+                            "max_expired_period": 1,
+                            "image": 1,
                             "created_at": 1,
                         }}
                     ],
-                    'as': 'seed'
+                    'as': 'suplemen'
                 }},
                 {"$addFields": {
-                    "seed": {"$first": "$seed"},
+                    "suplemen": {"$first": "$suplemen"},
                 }},
             ]
 
-            testing = SeedHistory.objects.aggregate(pipeline)
+            testing = SuplemenHistory.objects.aggregate(pipeline)
             temp = list(testing)
-            response = json.dumps(temp, default=str)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp,
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": e}
@@ -200,163 +223,21 @@ class SuplemenHistoryApi(Resource):
     def post(self):
         try:
             body = {
-                "fish_seed_id": request.form.get('fish_seed_id', None),
+                "fish_suplemen_id": request.form.get('fish_suplemen_id', None),
                 "original_amount": request.form.get('original_amount', None),
                 "usage": request.form.get('usage', None),
                 "pond": request.form.get('pond', None),
             }
 
-            # update seed inventory table
-            get_seed_by_id = SeedInventory.objects.get(id=request.form.get('fish_seed_id', None))
-            get_seed_by_id.amount -= int(request.form.get('usage', None))
-            get_seed_by_id.save()
+            # update suplemen inventory table
+            get_suplemen_by_id = SuplemenInventory.objects.get(id=request.form.get('fish_suplemen_id', None))
+            get_suplemen_by_id.amount -= float(request.form.get('usage', None))
+            get_suplemen_by_id.save()
             
             # save body to history table
-            seed_history = SeedHistory(**body).save()
-            id = seed_history.id
-            res = {"message": "success add seed history","id": id, "data": body}
-            response = json.dumps(res, default=str)
-            return Response(response, mimetype="application/json", status=200)
-        except Exception as e:
-            response = {"message": str(e)}
-            response = json.dumps(response, default=str)
-            return Response(response, mimetype="application/json", status=400)
-        
-# class ElectricHistoryApi(Resource):
-#     def get(self):
-#         try:
-#             start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else ""
-#             end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else ""
-
-#             pipeline = [
-#                 {
-#                     '$match': {
-#                         'created_at': {
-#                             '$gte': start_date,
-#                             '$lte': end_date,
-#                         }
-#                     }
-#                 },
-#                 {"$sort": {"fish_seed_id": 1}},
-#                 {'$lookup': {
-#                     'from': 'seed_inventory',
-#                     'let': {"fishseedid": "$fish_seed_id"},
-#                     'pipeline': [
-#                         {'$match': {'$expr': {'$eq': ['$_id', '$$fishseedid']}}},
-#                         {"$project": {
-#                             "_id": 1,
-#                             "fish_seed_category": 1,
-#                             "fish_type": 1,
-#                             "brand_name": 1,
-#                             "price": 1,
-#                             "created_at": 1,
-#                         }}
-#                     ],
-#                     'as': 'seed'
-#                 }},
-#                 {"$addFields": {
-#                     "seed": {"$first": "$seed"},
-#                 }},
-#             ]
-
-#             testing = SeedHistory.objects.aggregate(pipeline)
-#             temp = list(testing)
-#             response = json.dumps(temp, default=str)
-#             return Response(response, mimetype="application/json", status=200)
-#         except Exception as e:
-#             response = {"message": e}
-#             response = json.dumps(response, default=str)
-#             return Response(response, mimetype="application/json", status=400)
-
-#     def post(self):
-#         try:
-#             body = {
-#                 "fish_seed_id": request.form.get('fish_seed_id', None),
-#                 "original_amount": request.form.get('original_amount', None),
-#                 "usage": request.form.get('usage', None),
-#                 "pond": request.form.get('pond', None),
-#             }
-
-#             # update seed inventory table
-#             get_seed_by_id = SeedInventory.objects.get(id=request.form.get('fish_seed_id', None))
-#             get_seed_by_id.amount -= int(request.form.get('usage', None))
-#             get_seed_by_id.save()
-            
-#             # save body to history table
-#             seed_history = SeedHistory(**body).save()
-#             id = seed_history.id
-#             res = {"message": "success add seed history","id": id, "data": body}
-#             response = json.dumps(res, default=str)
-#             return Response(response, mimetype="application/json", status=200)
-#         except Exception as e:
-#             response = {"message": str(e)}
-#             response = json.dumps(response, default=str)
-#             return Response(response, mimetype="application/json", status=400)
-        
-class AssetHistoryApi(Resource):
-    def get(self):
-        try:
-            start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else ""
-            end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else ""
-
-            pipeline = [
-                {
-                    '$match': {
-                        'created_at': {
-                            '$gte': start_date,
-                            '$lte': end_date,
-                        }
-                    }
-                },
-                {"$sort": {"fish_seed_id": 1}},
-                {'$lookup': {
-                    'from': 'seed_inventory',
-                    'let': {"fishseedid": "$fish_seed_id"},
-                    'pipeline': [
-                        {'$match': {'$expr': {'$eq': ['$_id', '$$fishseedid']}}},
-                        {"$project": {
-                            "_id": 1,
-                            "fish_seed_category": 1,
-                            "fish_type": 1,
-                            "brand_name": 1,
-                            "price": 1,
-                            "created_at": 1,
-                        }}
-                    ],
-                    'as': 'seed'
-                }},
-                {"$addFields": {
-                    "seed": {"$first": "$seed"},
-                }},
-            ]
-
-            testing = SeedHistory.objects.aggregate(pipeline)
-            temp = list(testing)
-            response = json.dumps(temp, default=str)
-            return Response(response, mimetype="application/json", status=200)
-        except Exception as e:
-            response = {"message": e}
-            response = json.dumps(response, default=str)
-            return Response(response, mimetype="application/json", status=400)
-
-    def post(self):
-        try:
-            body = {
-                "fish_seed_id": request.form.get('fish_seed_id', None),
-                "original_amount": request.form.get('original_amount', None),
-                "usage": request.form.get('usage', None),
-                "pond": request.form.get('pond', None),
-            }
-
-            # update seed inventory table
-            get_seed_by_id = SeedInventory.objects.get(id=request.form.get('fish_seed_id', None))
-            get_seed_by_id.amount -= int(request.form.get('usage', None))
-            get_seed_by_id.save()
-            
-            # save body to history table
-            seed_history = SeedHistory(**body).save()
-            id = seed_history.id
-            res = {"message": "success add seed history","id": id, "data": body}
+            suplemen_history = SuplemenHistory(**body).save()
+            id = suplemen_history.id
+            res = {"message": "success add suplemen history","id": id, "data": body}
             response = json.dumps(res, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
