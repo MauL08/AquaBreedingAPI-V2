@@ -326,8 +326,8 @@ class SuplemenInventoryApi(Resource):
                 "price": request.form.get('price', None),
                 "amount": request.form.get('amount', None),
                 "type": request.form.get('type', None),
-                "min_expired_amount": request.form.get('min_expired_amount', None),
-                "max_expired_amount": request.form.get('max_expired_amount', None),
+                "min_expired_period": request.form.get('min_expired_period', None),
+                "max_expired_period": request.form.get('max_expired_period', None),
                 "image": request.form.get('image', None)
             }
             inventory = SuplemenInventory.objects.get(id_int = int(id)).update(**body)
