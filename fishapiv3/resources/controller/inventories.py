@@ -473,6 +473,8 @@ class AssetInventoriesApi(Resource):
     def get(self):
         try:
             type = request.args.get('type') if request.args.get('type') else ""
+            start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else ""
+            end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else ""
 
             pipeline = [
                 {"$sort": {"id_int": 1}},
@@ -481,14 +483,21 @@ class AssetInventoriesApi(Resource):
                         'asset_category': {
                             '$regex': type,
                             '$options': 'i'
+                        },
+                         'created_at': {
+                            '$gte': start_date,
+                            '$lte': end_date,
                         }
                     }
-                }
+                },
             ]
            
             testing = AssetInventory.objects.aggregate(pipeline)
             temp = list(testing)
-            response = json.dumps(temp, default=str)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp,
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": e}
@@ -528,7 +537,10 @@ class AssetInventoryApi(Resource):
                 res = {"message": 'no data found'}
                 response = json.dumps(res, default=str)
                 return Response(response, mimetype="application/json", status=200)
-            response = json.dumps(temp[0], default=str)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp[0],
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": e}
