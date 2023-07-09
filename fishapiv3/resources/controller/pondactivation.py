@@ -308,7 +308,6 @@ class PondActivationApi(Resource):
             "isFinish": False,
             "isWaterPreparation": isWaterPreparation,
             "water_level": water_level,
-            # "fish_seed_amount": request.form.get('fish_seed_amount', None),
             "activated_at": activated_at
         }
         pondActivation = PondActivation(**pond_activation_data).save()
@@ -329,17 +328,26 @@ class PondActivationApi(Resource):
                 **water_preparation_data).save()
         pond.update(**{"isActive": True,
         "status": "Aktif",  "pondDoDesc": "Belum Diukur", "pondPhDesc": "Belum Diukur", "pondPh": None, "pondDo": None, "pondTemp": None})
+        print(fishes)
         for fish in fishes:
             # save fish log
             data = {
                 "pond_id": pond_id,
                 "pond_activation_id": pondActivation_id,
                 "type_log": "activation",
+                "fish_seed_id": fish['seed_id'],
                 "fish_type": fish['type'],
+                "fish_category": fish['category'],
                 "fish_amount": fish['amount'],
                 "fish_total_weight": fish['weight'],
+                "fish_size": fish['size'],
             }
             fishlog = FishLog(**data).save()
+
+            get_seed_by_id = SeedInventory.objects.get(id=fish['seed_id'])
+            get_seed_by_id.amount -= int(fish['amount'])
+            get_seed_by_id.save()        
+
         response = {"message": "success to activation pond"}
         response = json.dumps(response, default=str)
         return Response(response, mimetype="application/json", status=200)

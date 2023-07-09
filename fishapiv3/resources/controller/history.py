@@ -46,7 +46,7 @@ class SeedHistoryApi(Resource):
                 }},
             ]
 
-            testing = SeedHistory.objects.aggregate(pipeline)
+            testing = SeedUsed.objects.aggregate(pipeline)
             temp = list(testing)
             response = json.dumps({
                 'status': 'success',
@@ -67,13 +67,8 @@ class SeedHistoryApi(Resource):
                 "pond": request.form.get('pond', None),
             }
 
-            # update seed inventory table
-            get_seed_by_id = SeedInventory.objects.get(id=request.form.get('fish_seed_id', None))
-            get_seed_by_id.amount -= int(request.form.get('usage', None))
-            get_seed_by_id.save()
-            
             # save body to history table
-            seed_history = SeedHistory(**body).save()
+            seed_history = SeedUsed(**body).save()
             id = seed_history.id
             res = {"message": "success add seed history","id": id, "data": body}
             response = json.dumps(res, default=str)
@@ -128,7 +123,7 @@ class FeedFishHistoryApi(Resource):
                 }},
             ]
 
-            testing = FeedHistory.objects.aggregate(pipeline)
+            testing = FeedUsed.objects.aggregate(pipeline)
             temp = list(testing)
             response = json.dumps({
                 'status': 'success',
@@ -155,7 +150,7 @@ class FeedFishHistoryApi(Resource):
             get_feed_by_id.save()
             
             # save body to history table
-            feed_history = FeedHistory(**body).save()
+            feed_history = FeedUsed(**body).save()
             id = feed_history.id
             res = {"message": "success add feed history","id": id, "data": body}
             response = json.dumps(res, default=str)
@@ -208,7 +203,7 @@ class SuplemenHistoryApi(Resource):
                 }},
             ]
 
-            testing = SuplemenHistory.objects.aggregate(pipeline)
+            testing = SuplemenUsed.objects.aggregate(pipeline)
             temp = list(testing)
             response = json.dumps({
                 'status': 'success',
@@ -235,7 +230,7 @@ class SuplemenHistoryApi(Resource):
             get_suplemen_by_id.save()
             
             # save body to history table
-            suplemen_history = SuplemenHistory(**body).save()
+            suplemen_history = SuplemenUsed(**body).save()
             id = suplemen_history.id
             res = {"message": "success add suplemen history","id": id, "data": body}
             response = json.dumps(res, default=str)

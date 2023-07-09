@@ -42,14 +42,13 @@ class StatisticApi(Resource):
         id_pond = []
         for i in list_active_ponds:
             id_pond.append(i['_id'])
-        print(id_pond)
         season = PondActivation.objects(pond_id__in=id_pond)
         active_culture_season = season(isFinish=False)
         # test = PondActivation.objects(pond_id__in=)
         id_active_culture_season = []
         for obj in active_culture_season:
             id_active_culture_season.append(obj.id)
-        print(id_active_culture_season)
+ 
         total_active_pond = len(list_active_ponds)
 
         # fish live
@@ -67,9 +66,14 @@ class StatisticApi(Resource):
             "total_weight_harvested")
 
         # feed dose
-        feed_dose = FeedHistory.objects(
+        if len(id_active_culture_season) < 1:
+            feed_dose = 0.0
+            total_feed_dose = 0
+        else:
+            feed_dose = FeedHistory.objects(
             pond_activation_id__in=id_active_culture_season)
-        total_feed_dose = feed_dose.sum("feed_dose")
+
+            total_feed_dose = feed_dose.sum("feed_dose")
 
         # fish weight
         fish_weight = [
@@ -126,7 +130,7 @@ class StatisticApi(Resource):
             "active_pond": total_active_pond,
             "fish_live": total_fish_live,
             "fish_death": total_fish_death,
-            "fish_harvested": total_fish_harvested,
+            "fish_harvested": float(total_fish_harvested),
             "total_feed_dose": float(total_feed_dose),
             "fishes_weight": fish_weight,
             "water_quality": {

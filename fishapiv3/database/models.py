@@ -117,17 +117,35 @@ class FishTransfer(db.Document):
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 
+class SeedInventory(db.Document):
+    id_int = db.SequenceField(required=True)
+    # farm_id = db.ReferenceField(Farm, required=True)
+    fish_seed_category = db.StringField(required=True)
+    fish_type = db.StringField(required=True)
+    brand_name = db.StringField(required=True)
+    amount = db.IntField(required=True)
+    weight = db.IntField()
+    # length = db.IntField()
+    width = db.StringField()
+    price = db.IntField(required=True)
+    image = db.StringField(required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
+
 class FishLog(db.Document):
     fish_type_option = ("nila hitam", "nila merah", "lele", "patin", "mas")
 
     pond_id = db.ReferenceField(Pond, required=True)
     pond_activation_id = db.ObjectIdField(required=False, default=None)
+    fish_seed_id = db.ReferenceField(SeedInventory, required=True)
     fish_death_id = db.ObjectIdField(required=False, default=None)
     fish_transfer_id = db.ObjectIdField(required=False, default=None)
     type_log = db.StringField(required=True)
     fish_type = db.StringField(required=True, choices=fish_type_option)
+    fish_category = db.StringField(required=True)
     fish_amount = db.IntField(required=True)
     fish_total_weight = db.IntField(default=None)
+    fish_size = db.StringField(default=None)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
@@ -210,22 +228,7 @@ class Breeder(db.Document):
     nik = db.StringField(required=True)
     phone = db.StringField(required=True)
 
-class SeedInventory(db.Document):
-    id_int = db.SequenceField(required=True)
-    # farm_id = db.ReferenceField(Farm, required=True)
-    fish_seed_category = db.StringField(required=True)
-    fish_type = db.StringField(required=True)
-    brand_name = db.StringField(required=True)
-    amount = db.IntField(required=True)
-    weight = db.IntField()
-    # length = db.IntField()
-    width = db.StringField()
-    price = db.IntField(required=True)
-    image = db.StringField(required=True)
-    created_at = db.DateTimeField(default=datetime.datetime.now)
-    updated_at = db.DateTimeField(default=datetime.datetime.now)
-
-class SeedHistory(db.Document):
+class SeedUsed(db.Document):
     fish_seed_id = db.ReferenceField(SeedInventory, required=True)
     original_amount = db.IntField(required=True)
     usage = db.IntField(required=True)
@@ -249,7 +252,7 @@ class FeedInventory(db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
-class FeedHistory(db.Document):
+class FeedUsed(db.Document):
     fish_feed_id = db.ReferenceField(FeedInventory, required=True)
     original_amount = db.IntField(required=True)
     usage = db.IntField(required=True)
@@ -271,7 +274,7 @@ class SuplemenInventory(db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
-class SuplemenHistory(db.Document):
+class SuplemenUsed(db.Document):
     fish_suplemen_id = db.ReferenceField(SuplemenInventory, required=True)
     original_amount = db.FloatField(required=True)
     usage = db.FloatField(required=True)
