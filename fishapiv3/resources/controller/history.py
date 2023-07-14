@@ -143,12 +143,6 @@ class FeedFishHistoryApi(Resource):
                 "usage": request.form.get('usage', None),
                 "pond": request.form.get('pond', None),
             }
-
-            # update feed inventory table
-            get_feed_by_id = FeedInventory.objects.get(id=request.form.get('fish_feed_id', None))
-            get_feed_by_id.amount -= int(request.form.get('usage', None))
-            get_feed_by_id.save()
-            
             # save body to history table
             feed_history = FeedUsed(**body).save()
             id = feed_history.id
@@ -224,10 +218,10 @@ class SuplemenHistoryApi(Resource):
                 "pond": request.form.get('pond', None),
             }
 
-            # update suplemen inventory table
-            get_suplemen_by_id = SuplemenInventory.objects.get(id=request.form.get('fish_suplemen_id', None))
-            get_suplemen_by_id.amount -= float(request.form.get('usage', None))
-            get_suplemen_by_id.save()
+            # # update suplemen inventory table
+            # get_suplemen_by_id = SuplemenInventory.objects.get(id=request.form.get('fish_suplemen_id', None))
+            # get_suplemen_by_id.amount -= float(request.form.get('usage', None))
+            # get_suplemen_by_id.save()
             
             # save body to history table
             suplemen_history = SuplemenUsed(**body).save()

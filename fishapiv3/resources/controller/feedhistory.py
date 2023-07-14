@@ -77,7 +77,7 @@ class FeedHistorysApi(Resource):
         try:
             pond_id = request.form.get("pond_id", None)
             print(pond_id)
-            feed_type_id = request.form.get("feed_type_id", None)
+            fish_feed_id = request.form.get("fish_feed_id", None)
             pond = Pond.objects.get(id=pond_id)
             if pond['isActive'] == False:
                 response = {"message": "pond is not active"}
@@ -85,7 +85,7 @@ class FeedHistorysApi(Resource):
                 return Response(response, mimetype="application/json", status=400)
             pond_activation = PondActivation.objects(
                 pond_id=pond_id, isFinish=False).order_by('-activated_at').first()
-            feed_type = FeedType.objects.get(id=feed_type_id)
+            # feed_type = FeedType.objects.get(id=feed_type_id)
             feed_history_time = request.form.get("feed_history_time", None)
             if feed_history_time != None:
                 feed_history_time = datetime.datetime.fromisoformat(
@@ -93,10 +93,16 @@ class FeedHistorysApi(Resource):
             body = {
                 "pond_id": pond_id,
                 "pond_activation_id": pond_activation.id,
-                "feed_type_id": feed_type_id,
+                "fish_feed_id": fish_feed_id,
                 "feed_dose": request.form.get("feed_dose", None),
                 "feed_history_time": feed_history_time
             }
+
+            # # update feed inventory table
+            get_feed_by_id = FeedInventory.objects.get(id=request.form.get('fish_feed_id', None))
+            get_feed_by_id.amount -= float(request.form.get('feed_dose', None))
+            get_feed_by_id.save()
+
             feedhistory = FeedHistory(**body).save()
             id = feedhistory.id
             return {'id': str(id), 'message': 'success input'}, 200
@@ -363,7 +369,6 @@ class FeedHistoryMonthByActivation(Resource):
                     "total_feed": {"$sum": "$feed_dose"},
                     "total_feedhistory": {"$sum": 1}
                 }},
-                {"$sort": {"year": 1, "_id": 1}},
             ]
             feedHistorys = FeedHistory.objects.aggregate(pipeline)
             response = list(feedHistorys)
@@ -479,17 +484,31 @@ class FeedHistoryHourByActivation(Resource):
                 }},
                 {"$sort": {"year": 1, "month": 1, "_id": 1}},
                 {'$lookup': {
-                    'from': 'feed_type',
-                            'let': {"feedid": "$feed_type_id"},
-                            'pipeline': [
-                                {'$match': {
-                                    '$expr': {'$eq': ['$_id', '$$feedid']}}},
-                                {"$project": {
-                                    "created_at": 0,
-                                    "updated_at": 0,
-                                }}
-                            ],
-                    'as': 'feed_type'
+                    'from': 'feed_inventory',
+                    'let': {"fishfeedid": "$fish_feed_id"},
+                    'pipeline': [
+                        {'$match': {'$expr': {'$eq': ['$_id', '$$fishfeedid']}}},
+                        {"$project": {
+                            "_id": 1,
+                            "id_int": 1,
+                            "feed_category": 1,
+                            "brand_name": 1,
+                            "description": 1,
+                            "price": 1,
+                            "amount": 1,
+                            "producer": 1,
+                            "protein": 1,
+                            "carbohydrate": 1,
+                            "min_expired_period": 1,
+                            "max_expired_period": 1,
+                            "image": 1,
+                            "created_at": 1,
+                        }}
+                    ],
+                    'as': 'feed'
+                }},
+                {"$addFields": {
+                    "feed": {"$first": "$feed"},
                 }},
             ]
             feedHistorys = FeedHistory.objects.aggregate(pipeline)
@@ -501,92 +520,176 @@ class FeedHistoryHourByActivation(Resource):
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
 
-class FeedHistoryForChart(Resource):
+# class FeedHistoryForChart(Resource):
 
-    def get(self, activation_id):
-        try:
-            pipeline = [
-                {'$match': {'$expr': {'$and': [
-                            {'$eq': ['$pond_activation_id', {
-                                '$toObjectId': activation_id}]},
-                            ]}}},
-                {"$addFields": {
-                    "week": {"$week": "$feed_history_time"},
-                    "day": {"$dayOfMonth": "$feed_history_time"},
-                    "month": {"$month": "$feed_history_time"},
-                    "year": {"$year": "$feed_history_time"},
-                }},
-                {"$sort": {"year": 1, "month": 1, "_id": 1}},
-                {'$lookup': {
-                    'from': 'feed_type',
-                            'let': {"feedid": "$feed_type_id"},
-                            'pipeline': [
-                                {'$match': {
-                                    '$expr': {'$eq': ['$_id', '$$feedid']}}},
-                                {"$project": {
-                                    "created_at": 0,
-                                    "updated_at": 0,
-                                }}
-                            ],
-                    'as': 'feed_type'
-                }},
-            ]
-            feedHistorys = FeedHistory.objects.aggregate(pipeline)
-            response = list(feedHistorys)
-            feed = []
-            dateIndicator = None
-            feeddose = 0
-            getlogic = 200
-            samedate = datetime.now()
-            yesterday = samedate - timedelta(days = 2)
-            samedate = samedate - samedate
-            for fish in response:
-                date = fish["feed_history_time"].strftime('%d-%m-%Y')
-                if (dateIndicator != None):
-                    if (getlogic == samedate) :
-                        feeddose += float(fish["feed_dose"])
-                        feed.pop()
-                        data = {
-                            "pond_id": fish['pond_id'],
-                            "pond_activation_id": fish['pond_activation_id'],
-                            "date": fish['feed_history_time'],
-                            "feed_dose": feeddose
-                        }
-                        dateIndicator = date
-                        date_object = datetime.strptime(date, '%d-%m-%Y').date()
-                        datecompar_object = datetime.strptime(dateIndicator, '%d-%m-%Y').date()
-                        getlogic = datecompar_object - date_object
-                        feed.append(data)
-                    if (getlogic != samedate) :
-                        feeddose = 0
-                        data = {
-                            "pond_id": fish['pond_id'],
-                            "pond_activation_id": fish['pond_activation_id'],
-                            "date": fish['feed_history_time'],
-                            "feed_dose": fish["feed_dose"]
-                        }
-                        dateIndicator = date
-                        date_object = datetime.strptime(date, '%d-%m-%Y').date()
-                        datecompar_object = datetime.strptime(dateIndicator, '%d-%m-%Y').date()
-                        getlogic = datecompar_object - date_object
-                        feeddose += float(fish["feed_dose"])
-                        feed.append(data)
-                else :
-                    data = {
-                        "pond_id": fish['pond_id'],
-                        "pond_activation_id": fish['pond_activation_id'],
-                        "date": fish['feed_history_time'],
-                        "feed_dose": fish["feed_dose"]
-                    }
+#     def get(self, activation_id):
+#         try:
+#             pipeline = [
+#                 {'$match': {'$expr': {'$and': [
+#                             {'$eq': ['$pond_activation_id', {
+#                                 '$toObjectId': activation_id}]},
+#                             ]}}},
+#                 {"$addFields": {
+#                     "week": {"$week": "$feed_history_time"},
+#                     "day": {"$dayOfMonth": "$feed_history_time"},
+#                     "month": {"$month": "$feed_history_time"},
+#                     "year": {"$year": "$feed_history_time"},
+#                 }},
+#                 {"$sort": {"year": 1, "month": 1, "_id": 1}},
+#                 # {'$lookup': {
+#                 #     'from': 'feed_type',
+#                 #             'let': {"feedid": "$feed_type_id"},
+#                 #             'pipeline': [
+#                 #                 {'$match': {
+#                 #                     '$expr': {'$eq': ['$_id', '$$feedid']}}},
+#                 #                 {"$project": {
+#                 #                     "created_at": 0,
+#                 #                     "updated_at": 0,
+#                 #                 }}
+#                 #             ],
+#                 #     'as': 'feed_type'
+#                 # }},
+#             ]
+#             feedHistorys = FeedHistory.objects.aggregate(pipeline)
+#             response = list(feedHistorys)
+#             feed = []
+#             dateIndicator = None
+#             feeddose = 0
+#             getlogic = 200
+#             samedate = datetime.now()
+#             yesterday = samedate - timedelta(days = 2)
+#             samedate = samedate - samedate
+#             # print(response)
+#             for fish in response:
+#                 date = fish["feed_history_time"].strftime('%d-%m-%Y')
+#                 if (dateIndicator != None):
+#                     if (getlogic == samedate) :
+#                         feeddose += float(fish["feed_dose"])
+#                         feed.pop()
+#                         data = {
+#                             "pond_id": fish['pond_id'],
+#                             "pond_activation_id": fish['pond_activation_id'],
+#                             "fish_feed_id": fish['fish_feed_id'],
+#                             "date": fish['feed_history_time'],
+#                             "feed_dose": feeddose,
+#                             # "feed_used": fish['feed_used'],
+#                         }
+#                         dateIndicator = date
+#                         date_object = datetime.strptime(date, '%d-%m-%Y').date()
+#                         datecompar_object = datetime.strptime(dateIndicator, '%d-%m-%Y').date()
+#                         getlogic = datecompar_object - date_object
+#                         feed.append(data)
+#                     if (getlogic != samedate) :
+#                         feeddose = 0
+#                         data = {
+#                             "pond_id": fish['pond_id'],
+#                             "pond_activation_id": fish['pond_activation_id'],
+#                             "fish_feed_id": fish['fish_feed_id'],
+#                             "date": fish['feed_history_time'],
+#                             "feed_dose": fish["feed_dose"],
+#                             # "feed_used": fish['feed_used'],
+#                         }
+#                         dateIndicator = date
+#                         date_object = datetime.strptime(date, '%d-%m-%Y').date()
+#                         datecompar_object = datetime.strptime(dateIndicator, '%d-%m-%Y').date()
+#                         getlogic = datecompar_object - date_object
+#                         feeddose += float(fish["feed_dose"])
+#                         feed.append(data)
+#                 else :
+#                     data = {
+#                         "pond_id": fish['pond_id'],
+#                         "pond_activation_id": fish['pond_activation_id'],
+#                         "fish_feed_id": fish['fish_feed_id'],
+#                         "date": fish['feed_history_time'],
+#                         "feed_dose": fish["feed_dose"],
+#                         # "feed_used": fish['feed_used'],
+#                     }
                     
-                    date_object = datetime.strptime(date, '%d-%m-%Y').date()
-                    feed.append(data)
-                    feeddose += int(fish["feed_dose"])
-                    getlogic =  date_object - yesterday.date()
-                    dateIndicator = date
-            response = json.dumps(feed, default=str)
+#                     date_object = datetime.strptime(date, '%d-%m-%Y').date()
+#                     feed.append(data)
+#                     feeddose += int(fish["feed_dose"])
+#                     getlogic =  date_object - yesterday.date()
+#                     dateIndicator = date
+#             response = json.dumps(feed, default=str)
+#             return Response(response, mimetype="application/json", status=200)
+#         except Exception as e:
+#             response = {"message": e}
+#             response = json.dumps(response, default=str)
+#             return Response(response, mimetype="application/json", status=400)
+
+class FeedHistoryForChart(Resource):
+    def get(self):
+        try:
+            type = request.args.get('type') if request.args.get('type') else ""
+
+            pipeline = [
+                {'$lookup': {
+                    'from': 'feed_inventory',
+                    'let': {"fishfeedid": "$fish_feed_id"},
+                    'pipeline': [
+                        {'$match': {'$expr': {'$eq': ['$_id', '$$fishfeedid']},
+                                    'feed_category': type,
+                            }
+                        },
+                        {"$project": {
+                            "_id": 1,
+                            "id_int": 1,
+                            "feed_category": 1,
+                            "brand_name": 1,
+                            "description": 1,
+                            "price": 1,
+                            "amount": 1,
+                            "producer": 1,
+                            "protein": 1,
+                            "carbohydrate": 1,
+                            "min_expired_period": 1,
+                            "max_expired_period": 1,
+                            "image": 1,
+                            "created_at": 1,
+                        }}
+                    ],
+                    'as': 'feed'
+                }},
+                # {"$addFields": {
+                #     "feed": {"$first": "$feed"},
+                # }},
+                {
+                    '$unwind': '$feed'
+                },
+                # {
+                #     '$match': {
+                #         'feed.feed_category': 'alami'
+                #     }
+                # },
+                {
+                    '$group': {
+                        '_id': {
+                            'created_at': {
+                                '$dateToString': {
+                                    'format': '%Y-%m-%d',
+                                    'date': '$created_at'
+                                }
+                            }
+                        },
+                        'total_usage': { '$sum': '$usage' },
+                        'feed_data': { '$push': '$feed' }
+                    }
+                },
+                {
+                    '$sort': {
+                        '_id.created_at': 1  # 1 for ascending order, -1 for descending order
+                    }
+                }
+            ]
+
+            testing = FeedUsed.objects.aggregate(pipeline)
+            temp = list(testing)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp,
+            }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
-            response = {"message": str(e)}
+            response = {"message": e}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)

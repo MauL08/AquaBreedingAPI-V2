@@ -2,7 +2,7 @@ import os
 from flask import Flask, render_template, url_for, current_app, Response, request
 from .database.db import initialize_db
 from flask_restful import Api
-from fishapiv3.database.models import FeedHistory, Pond, FeedType, PondActivation, FishDeath, FishTransfer, FishGrading, OptionTable, DailyWaterQuality, WeeklyWaterQuality, PondTreatment
+from fishapiv3.database.models import FeedHistory, Pond, PondActivation, FishDeath, FishTransfer, FishGrading, OptionTable, DailyWaterQuality, WeeklyWaterQuality, PondTreatment
 from .resources.helper import *
 from .resources.routes import initialize_routes
 import json

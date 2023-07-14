@@ -32,8 +32,8 @@ def initialize_routes(api):
     api.add_resource(PondDeactivationApi, '/api/ponds/<pond_id>/closing')
 
     # feedtype
-    api.add_resource(FeedTypesApi, '/api/feedtypes')
-    api.add_resource(FeedTypeApi, '/api/feedtypes/<id>')
+    # api.add_resource(FeedTypesApi, '/api/feedtypes')
+    # api.add_resource(FeedTypeApi, '/api/feedtypes/<id>')
 
     # feedhistory
     api.add_resource(FeedHistorysApi, '/api/feedhistorys')
@@ -51,7 +51,7 @@ def initialize_routes(api):
     api.add_resource(FeedHistoryByOnePond,
                      '/api/feedhistorysbyonepond/<id>')
     api.add_resource(FeedHistoryForChart,
-                     '/api/feedhistoryforchart/<activation_id>')
+                     '/api/feedhistoryforchart')
 
     # fish death
     api.add_resource(FishDeathsApi, '/api/fishdeath')

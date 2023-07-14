@@ -65,28 +65,6 @@ class WaterPreparation(db.Document):
     calcium = db.IntField(required=True)
 
 
-class FeedType(db.Document):
-    feed_type_option = ("pelet", "sayuran")
-
-    name = db.StringField(required=True)
-    feed_type = db.StringField(required=True, choices=feed_type_option)
-    protein = db.IntField(required=True)
-    carbohydrate = db.IntField(required=True)
-    desc = db.StringField()
-    created_at = db.DateTimeField(default=datetime.datetime.now)
-    updated_at = db.DateTimeField(default=datetime.datetime.now)
-
-
-class FeedHistory(db.Document):
-    pond_id = db.ReferenceField(Pond, required=True)
-    pond_activation_id = db.ReferenceField(PondActivation, required=True)
-    feed_type_id = db.ReferenceField(FeedType, required=True)
-    feed_dose = db.FloatField(required=True)
-    feed_history_time = db.DateTimeField(default=datetime.datetime.now)
-    created_at = db.DateTimeField(default=datetime.datetime.now)
-    updated_at = db.DateTimeField(default=datetime.datetime.now)
-
-
 class FishDeath(db.Document):
     pond_id = db.ReferenceField(Pond, required=True)
     pond_activation_id = db.ReferenceField(PondActivation, required=True)
@@ -242,7 +220,7 @@ class FeedInventory(db.Document):
     brand_name = db.StringField(required=True)
     description = db.StringField(required=True)
     price = db.IntField(required=True)
-    amount = db.IntField(required=True)
+    amount = db.FloatField(required=True)
     producer = db.StringField(required=True)
     protein = db.IntField(required=True)
     carbohydrate = db.IntField(required=True)
@@ -254,9 +232,18 @@ class FeedInventory(db.Document):
 
 class FeedUsed(db.Document):
     fish_feed_id = db.ReferenceField(FeedInventory, required=True)
-    original_amount = db.IntField(required=True)
-    usage = db.IntField(required=True)
+    original_amount = db.FloatField(required=True)
+    usage = db.FloatField(required=True)
     pond = db.StringField(required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
+
+class FeedHistory(db.Document):
+    pond_id = db.ReferenceField(Pond, required=True)
+    fish_feed_id = db.ReferenceField(FeedInventory, required=True)
+    pond_activation_id = db.ReferenceField(PondActivation, required=True)
+    feed_dose = db.FloatField(required=True)
+    feed_history_time = db.DateTimeField(default=datetime.datetime.now)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
@@ -302,3 +289,12 @@ class AssetInventory(db.Document):
     image = db.StringField(required=True)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
+
+# class FeedType(db.Document):
+#     fish_feed_id = db.ReferenceField(FeedInventory, required=True)
+#     feed_type = db.StringField(required=True)
+#     name = db.StringField(required=True)
+#     protein = db.IntField(required=True)
+#     carbohydrate = db.IntField(required=True)
+#     created_at = db.DateTimeField(default=datetime.datetime.now)
+#     updated_at = db.DateTimeField(default=datetime.datetime.now)
