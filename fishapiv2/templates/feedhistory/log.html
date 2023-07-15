@@ -34,8 +34,15 @@
                                     <td>{{index}}</td>
                                     <td>{{feedhistory["date"]}}</td>
                                     <td>{{feedhistory["time"]}}</td>
+<<<<<<< HEAD
                                     <td>{{feedhistory["pond"]["alias"]}}</td>
                                     <td>{{feedhistory["pond_activation"]["id_int"]}}</td>
+=======
+                                    <td>{{feedhistory.pond.alias if feedhistory.pond else "-"}}</td>
+                                    <td>{{feedhistory.pond_activation.activation_date if feedhistory.pond_activation
+                                        else "-"}}
+                                    </td>
+>>>>>>> 3394e4aff832af0a8f27196f41a898c7412aee19
                                     <td>{{feedhistory["feed_type"]["name"]}}</td>
                                     <td>{{feedhistory["feed_dose"]}} gram</td>
                                 </tr>

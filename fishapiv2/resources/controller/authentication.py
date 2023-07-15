@@ -18,13 +18,16 @@ class Login(Resource):
             username = request.form.get("username")
             password = request.form.get("password")
             data = Breeder.objects.get(username=username)
+
+            farm = Farm.objects.get(id=data.farm_id.id)
             user = {
                 "id": str(data.id),
                 "farm_id": str(data.farm_id.id),
                 "username": data.username,
                 "name": data.name,
                 "nik": data.nik,
-                "phone": data.phone
+                "phone": data.phone,
+                "farm_name":farm.farm_name
             }
             passwordcheck = check_password_hash(data.password, password)
             if passwordcheck == True:
@@ -45,6 +48,15 @@ class Register(Resource):
             nik = request.form.get('nik')
             phone = request.form.get('phone')
             hasFarm = request.form.get('hasFarm')
+            pipeline_user = [
+                {"$match": {"username": username}},
+            ]
+            check_breeder = Breeder.objects.aggregate(pipeline_user)
+            checking_breeder = list(check_breeder)
+            if len(checking_breeder) > 0:
+                response = {"message": "BreederID Sudah Digunakan"}
+                response = json.dumps(response, default=str)
+                return Response(response, mimetype="application/json", status=400)
             password_hash = generate_password_hash(password, method='sha256')
             if hasFarm == "Belum":
                 farm_name = request.form.get('farm_name')
@@ -61,6 +73,8 @@ class Register(Resource):
                 farm_id = farm.id
             if hasFarm == "Sudah":
                 farm_id = request.form.get('farm_id')
+                farm = Farm.objects.get(id=farm_id)
+                farm_name = farm.farm_name
             body = {
                 "farm_id": farm_id,
                 "username": username,
@@ -73,6 +87,7 @@ class Register(Resource):
             user = {
                 "id": str(breeder.id),
                 "farm_id": str(breeder.farm_id.id),
+                "farm_name": farm_name,
                 "username": breeder.username,
                 "name": breeder.name,
                 "nik": breeder.nik,

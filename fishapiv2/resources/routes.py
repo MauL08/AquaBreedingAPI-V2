@@ -5,6 +5,7 @@ from .controller.feedtype import *
 from .controller.pondactivation import *
 from .controller.fishdeath import *
 from .controller.fishtransfer import *
+from .controller.fishsort import *
 from .controller.fishgrading import *
 from .controller.dailywaterquality import *
 from .controller.weeklywaterquality import *
@@ -15,6 +16,8 @@ from .controller.breeder import *
 from .controller.farm import *
 from .controller.inventories import *
 from .controller.history import *
+from .controller.logging import *
+from .controller.addfish import *
 
 
 def initialize_routes(api):
@@ -34,6 +37,7 @@ def initialize_routes(api):
     # feedtype
     # api.add_resource(FeedTypesApi, '/api/feedtypes')
     # api.add_resource(FeedTypeApi, '/api/feedtypes/<id>')
+    api.add_resource(PondActivationDetailApi, '/api/pondactivation/<id>/<pond>')
 
     # feedhistory
     api.add_resource(FeedHistorysApi, '/api/feedhistorys')
@@ -64,6 +68,16 @@ def initialize_routes(api):
     # fish transfer
     api.add_resource(FishTransfersApi, '/api/fishtransfer')
     api.add_resource(FishTransferApi, '/api/fishtransfer/<id>')
+
+    # add fish
+    api.add_resource(AddFishApi, '/api/addfish')
+
+    # edit fish
+    api.add_resource(EditFishApi, '/api/editfish')
+
+    # fish sort
+    api.add_resource(FishSortsApi, '/api/fishsort')
+
 
     # fish grading
     api.add_resource(FishGradingsApi, '/api/fishgradings')
@@ -119,3 +133,8 @@ def initialize_routes(api):
     api.add_resource(SeedHistoryApi, '/api/history/inventory/seed')
     api.add_resource(FeedFishHistoryApi, '/api/history/inventory/feed')
     api.add_resource(SuplemenHistoryApi, '/api/history/inventory/suplemen')
+    api.add_resource(BreederListApi, '/api/breederlist')
+    api.add_resource(LoggingApi, '/api/logging')
+
+    # chart fish
+    api.add_resource(FishLiveChart, '/api/fishchart/<activation_id>')
