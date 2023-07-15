@@ -1,8 +1,8 @@
 import os
 from flask_restful import Resource, reqparse
 from flask import Flask, Response, request, current_app, url_for, send_from_directory
-from fishapiv2.database.models import *
-from fishapiv2.resources.helper import *
+from fishapiv3.database.models import *
+from fishapiv3.resources.helper import *
 import datetime
 import json
 

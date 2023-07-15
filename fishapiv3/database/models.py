@@ -10,6 +10,16 @@ class Farm(db.Document):
     breeder = db.StringField(required=True)
     coordinate = db.StringField()
 
+
+class Breeder(db.Document):
+    farm_id = db.ReferenceField(Farm, required=True)
+    username = db.StringField(required=True)
+    password = db.StringField(required=True)
+    name = db.StringField(required=True)
+    nik = db.StringField(required=True)
+    phone = db.StringField(required=True)
+
+
 class Pond(db.Document):
     shape_option = ("bundar", "persegi")
 
@@ -43,11 +53,17 @@ class PondActivation(db.Document):
     isWaterPreparation = db.BooleanField(required=True, default=False)
     water_level = db.FloatField(required=True, default=0)
     total_fish_harvested = db.IntField(required=True, default=0)
-    total_weight_harvested = db.IntField(required=True, default=0)
+    total_weight_harvested = db.FloatField(required=True, default=0)
     # fish_harvested = db.ArrayField(default=None)
     activated_at = db.DateTimeField(default=datetime.datetime.now)
     deactivated_at = db.DateTimeField(default=None)
     deactivated_description = db.StringField(default=None)
+    amount_normal_fish = db.IntField(default=None)
+    amount_oversize_fish = db.IntField(default=None)
+    amount_undersize_fish = db.IntField(default=None)
+    sample_amount = db.IntField(default=None)
+    sample_weight = db.FloatField(default=None)
+    sample_long = db.FloatField(default=None)
     constanta_oversize = db.FloatField(required=True, default=1.3)
     constanta_undersize = db.FloatField(required=True, default=0.7)
     created_at = db.DateTimeField(default=datetime.datetime.now)
@@ -115,7 +131,6 @@ class FishLog(db.Document):
 
     pond_id = db.ReferenceField(Pond, required=True)
     pond_activation_id = db.ObjectIdField(required=False, default=None)
-    fish_seed_id = db.ReferenceField(SeedInventory, required=True)
     fish_death_id = db.ObjectIdField(required=False, default=None)
     fish_transfer_id = db.ObjectIdField(required=False, default=None)
     type_log = db.StringField(required=True)
@@ -136,10 +151,10 @@ class FishGrading(db.Document):
     fish_type = db.StringField(required=True)
     sampling_amount = db.IntField(required=True)
     avg_fish_weight = db.FloatField(required=True)
-    avg_fish_long = db.FloatField(required=True)
-    amount_normal_fish = db.IntField(required=True)
-    amount_oversize_fish = db.IntField(required=True)
-    amount_undersize_fish = db.IntField(required=True)
+    avg_fish_long = db.FloatField(default=None)
+    amount_normal_fish = db.IntField(default=None)
+    amount_oversize_fish = db.IntField(default=None)
+    amount_undersize_fish = db.IntField(default=None)
     grading_at = db.DateTimeField(default=datetime.datetime.now)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
@@ -289,6 +304,16 @@ class AssetInventory(db.Document):
     image = db.StringField(required=True)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
+
+class Logging(db.Document):
+    farm_id = db.ReferenceField(Farm)
+    breeder_id = db.ReferenceField(Breeder)
+    farm_name = db.StringField()
+    breeder_name = db.StringField()
+    start_at = db.DateTimeField()
+    end_at = db.DateTimeField()
+    duration = db.StringField()
+    feature_name = db.StringField()
 
 # class FeedType(db.Document):
 #     fish_feed_id = db.ReferenceField(FeedInventory, required=True)
