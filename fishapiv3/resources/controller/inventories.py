@@ -237,6 +237,54 @@ class FeedInventoryApi(Resource):
             response = {"message": str(e)}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
+        
+class FeedNameApi(Resource):
+    def get(self):
+        try:
+            type = request.args.get('type') if request.args.get('type') else ""
+
+            pipeline = [
+                {"$sort": {"id_int": 1}},
+                {
+                    '$match': {
+                        'type': {
+                            '$regex': type,
+                            '$options': 'i'
+                        }
+                    }
+                }
+            ]
+
+            testing = FeedName.objects.aggregate(pipeline)
+            temp = list(testing)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp,
+            }, default=str)
+            return Response(response, mimetype="application/json", status=200)
+        except Exception as e:
+            response = {"message": e}
+            response = json.dumps(response, default=str)
+            return Response(response, mimetype="application/json", status=400)
+
+    def post(self):
+        try:
+            # current_user = get_jwt_identity()
+            # farm = str(current_user['farm_id'])
+            body = {
+                # "farm_id": farm,
+                "type": request.form.get('type', None),
+                "name": request.form.get('name', None),
+            }
+            feed_name = FeedName(**body).save()
+            id = feed_name.id
+            res = {"message": "success add feed name to db", "id": id, "data": body}
+            response = json.dumps(res, default=str)
+            return Response(response, mimetype="application/json", status=200)
+        except Exception as e:
+            response = {"message": str(e)}
+            response = json.dumps(response, default=str)
+            return Response(response, mimetype="application/json", status=400)
 
 class SuplemenInventoriesApi(Resource):
     def get(self):
@@ -292,7 +340,9 @@ class SuplemenInventoriesApi(Resource):
             response = {"message": str(e)}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
+        
 
+        
 class SuplemenInventoryApi(Resource):
     def get(self, id):
         try:
@@ -346,6 +396,54 @@ class SuplemenInventoryApi(Resource):
             inventory = SuplemenInventory.objects.get(id_int = int(id)).delete()
             response = {"message": "success delete suplemen inventory"}
             response = json.dumps(response, default=str)
+            return Response(response, mimetype="application/json", status=200)
+        except Exception as e:
+            response = {"message": str(e)}
+            response = json.dumps(response, default=str)
+            return Response(response, mimetype="application/json", status=400)
+        
+class SuplemenNameApi(Resource):
+    def get(self):
+        try:
+            type = request.args.get('type') if request.args.get('type') else ""
+
+            pipeline = [
+                {"$sort": {"id_int": 1}},
+                {
+                    '$match': {
+                        'type': {
+                            '$regex': type,
+                            '$options': 'i'
+                        }
+                    }
+                }
+            ]
+
+            testing = SuplemenName.objects.aggregate(pipeline)
+            temp = list(testing)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp,
+            }, default=str)
+            return Response(response, mimetype="application/json", status=200)
+        except Exception as e:
+            response = {"message": e}
+            response = json.dumps(response, default=str)
+            return Response(response, mimetype="application/json", status=400)
+
+    def post(self):
+        try:
+            # current_user = get_jwt_identity()
+            # farm = str(current_user['farm_id'])
+            body = {
+                # "farm_id": farm,
+                "type": request.form.get('type', None),
+                "name": request.form.get('name', None),
+            }
+            feed_name = SuplemenName(**body).save()
+            id = feed_name.id
+            res = {"message": "success add feed name to db", "id": id, "data": body}
+            response = json.dumps(res, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": str(e)}

@@ -262,6 +262,13 @@ class FeedHistory(db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
+class FeedName(db.Document):
+    id_int = db.SequenceField(required=True)
+    type = db.StringField(required=True)
+    name = db.StringField(required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
+
 class SuplemenInventory(db.Document):
     id_int = db.SequenceField(required=True)
     function = db.StringField(required=True)
@@ -281,6 +288,13 @@ class SuplemenUsed(db.Document):
     original_amount = db.FloatField(required=True)
     usage = db.FloatField(required=True)
     pond = db.StringField(required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
+
+class SuplemenName(db.Document):
+    id_int = db.SequenceField(required=True)
+    type = db.StringField(required=True)
+    name = db.StringField(required=True)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 

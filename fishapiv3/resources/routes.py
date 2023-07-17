@@ -116,10 +116,12 @@ def initialize_routes(api):
     # feed inventory
     api.add_resource(FeedInventoriesApi, '/api/inventory/feed')
     api.add_resource(FeedInventoryApi, '/api/inventory/feed/<id>')
+    api.add_resource(FeedNameApi, '/api/inventory/feed/name')
 
     # suplemen inventory
     api.add_resource(SuplemenInventoriesApi, '/api/inventory/suplemen')
     api.add_resource(SuplemenInventoryApi, '/api/inventory/suplemen/<id>')
+    api.add_resource(SuplemenNameApi, '/api/inventory/suplemen/name')
 
     # electric inventory
     api.add_resource(ElectricInventoriesApi, '/api/inventory/electric')
