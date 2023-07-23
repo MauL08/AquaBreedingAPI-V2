@@ -22,7 +22,7 @@ class SeedInventoriesApi(Resource):
                             '$options': 'i'
                         }
                     }
-                }
+                },
             ]
            
             testing = SeedInventory.objects.aggregate(pipeline)
@@ -50,6 +50,7 @@ class SeedInventoriesApi(Resource):
                 "weight": request.form.get('weight', None),
                 "width": request.form.get('width', None),
                 "price": request.form.get('price', None),
+                "total_price": request.form.get('total_price', None),
                 "image": request.form.get('image', None)
             }
             inventory = SeedInventory(**body).save()
@@ -96,6 +97,7 @@ class SeedInventoryApi(Resource):
                 "weight": request.form.get('weight', None),
                 "width": request.form.get('width', None),
                 "price": request.form.get('price', None),
+                "total_price": request.form.get('total_price', None),
                 "image": request.form.get('image', None)
             }
             inventory = SeedInventory.objects.get(id_int = int(id)).update(**body)
@@ -134,7 +136,7 @@ class FeedInventoriesApi(Resource):
                             '$options': 'i'
                         }
                     }
-                }
+                },
             ]
            
             testing = FeedInventory.objects.aggregate(pipeline)
@@ -156,6 +158,7 @@ class FeedInventoriesApi(Resource):
             body = {
                 # "farm_id": farm,
                 "feed_category": request.form.get('feed_category', None),
+                "feed_name_id": request.form.get('feed_name_id', None),
                 "brand_name": request.form.get('brand_name', None),
                 "description": request.form.get('description', None),
                 "price": request.form.get('price', None),
@@ -180,7 +183,27 @@ class FeedInventoriesApi(Resource):
 class FeedInventoryApi(Resource):
     def get(self, id):
         try:
-            pipeline = {"$match": {"id_int": int(id)}},
+            pipeline = [
+                {"$match": {"id_int": int(id)}},
+                # {'$lookup': {
+                #     'from': 'feed_name',
+                #     'let': {"feednameid": "$feed_name_id"},
+                #     'pipeline': [
+                #         {'$match': {'$expr': {'$eq': ['$_id', '$$feednameid']}}},
+                #         {"$project": {
+                #             "_id": 1,
+                #             "id_int": 1,
+                #             "name": 1,
+                           
+                #         }}
+                #     ],
+                #     'as': 'feed_detail',
+                # }},
+                # {"$addFields": {
+                #     "feed_detail": {"$first": "$feed_detail"},
+                # }},
+            ]
+     
             testing = FeedInventory.objects.aggregate(pipeline)
             temp = list(testing)
             if len(temp) == 0:
@@ -205,6 +228,7 @@ class FeedInventoryApi(Resource):
                 # "farm_id": farm,
                 "id_int": int(id),
                 "feed_category": request.form.get('feed_category', None),
+                "feed_name_id": request.form.get('feed_name_id', None),
                 "brand_name": request.form.get('brand_name', None),
                 "description": request.form.get('description', None),
                 "price": request.form.get('price', None),
@@ -238,7 +262,7 @@ class FeedInventoryApi(Resource):
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
         
-class FeedNameApi(Resource):
+class FeedNamesApi(Resource):
     def get(self):
         try:
             type = request.args.get('type') if request.args.get('type') else ""
@@ -285,6 +309,20 @@ class FeedNameApi(Resource):
             response = {"message": str(e)}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
+        
+class FeedNameApi(Resource):
+     def delete(self, id):
+        try:
+            # current_user = get_jwt_identity()
+            # farm = str(current_user['farm_id'])
+            inventory = FeedName.objects.get(id_int = int(id)).delete()
+            response = {"message": "success delete feed name on inventory"}
+            response = json.dumps(response, default=str)
+            return Response(response, mimetype="application/json", status=200)
+        except Exception as e:
+            response = {"message": str(e)}
+            response = json.dumps(response, default=str)
+            return Response(response, mimetype="application/json", status=400)
 
 class SuplemenInventoriesApi(Resource):
     def get(self):
@@ -321,6 +359,7 @@ class SuplemenInventoriesApi(Resource):
             # farm = str(current_user['farm_id'])
             body = {
                 # "farm_id": farm,
+                "suplemen_name_id": request.form.get('suplemen_name_id', None),
                 "function": request.form.get('function', None),
                 "name": request.form.get('name', None),
                 "description": request.form.get('description', None),
@@ -370,6 +409,7 @@ class SuplemenInventoryApi(Resource):
             body = {
                 # "farm_id": farm,
                 "id_int": int(id),
+                "suplemen_name_id": request.form.get('suplemen_name_id', None),
                 "function": request.form.get('function', None),
                 "name": request.form.get('name', None),
                 "description": request.form.get('description', None),
@@ -402,7 +442,7 @@ class SuplemenInventoryApi(Resource):
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
         
-class SuplemenNameApi(Resource):
+class SuplemenNamesApi(Resource):
     def get(self):
         try:
             type = request.args.get('type') if request.args.get('type') else ""
@@ -444,6 +484,20 @@ class SuplemenNameApi(Resource):
             id = feed_name.id
             res = {"message": "success add feed name to db", "id": id, "data": body}
             response = json.dumps(res, default=str)
+            return Response(response, mimetype="application/json", status=200)
+        except Exception as e:
+            response = {"message": str(e)}
+            response = json.dumps(response, default=str)
+            return Response(response, mimetype="application/json", status=400)
+
+class SuplemenNameApi(Resource):
+     def delete(self, id):
+        try:
+            # current_user = get_jwt_identity()
+            # farm = str(current_user['farm_id'])
+            inventory = SuplemenName.objects.get(id_int = int(id)).delete()
+            response = {"message": "success delete suplemen name on inventory"}
+            response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:
             response = {"message": str(e)}

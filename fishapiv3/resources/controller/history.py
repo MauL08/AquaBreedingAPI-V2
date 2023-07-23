@@ -14,6 +14,7 @@ class SeedHistoryApi(Resource):
         try:
             start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else datetime.datetime.strptime("2023-01-01", '%Y-%m-%d')
             end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else datetime.datetime.strptime("2030-01-01", '%Y-%m-%d')
+            name = request.args.get('name') if request.args.get('name') else ""
 
             pipeline = [
                 {
@@ -29,7 +30,15 @@ class SeedHistoryApi(Resource):
                     'from': 'seed_inventory',
                     'let': {"fishseedid": "$fish_seed_id"},
                     'pipeline': [
-                        {'$match': {'$expr': {'$eq': ['$_id', '$$fishseedid']}}},
+                        {'$match': {'$expr': {'$eq': ['$_id', '$$fishseedid']}}, },
+                        {
+                            '$match': {
+                                'brand_name': {
+                                    '$regex': name,
+                                    '$options': 'i'
+                                }
+                            }
+                        },
                         {"$project": {
                             "_id": 1,
                             "fish_seed_category": 1,
@@ -48,9 +57,16 @@ class SeedHistoryApi(Resource):
 
             testing = SeedUsed.objects.aggregate(pipeline)
             temp = list(testing)
+            result = []
+
+            for i in temp:
+                if 'seed' in i:
+                    result.append(i)
+               
+
             response = json.dumps({
                 'status': 'success',
-                'data': temp,
+                'data': result,
             }, default=str)
             return Response(response, mimetype="application/json", status=200)
         except Exception as e:

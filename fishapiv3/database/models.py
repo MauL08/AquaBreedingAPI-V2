@@ -118,10 +118,11 @@ class SeedInventory(db.Document):
     fish_type = db.StringField(required=True)
     brand_name = db.StringField(required=True)
     amount = db.IntField(required=True)
-    weight = db.IntField()
+    weight = db.FloatField(default=0)
     # length = db.IntField()
     width = db.StringField()
     price = db.IntField(required=True)
+    total_price = db.IntField(required=True)
     image = db.StringField(required=True)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
@@ -229,7 +230,15 @@ class SeedUsed(db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
+class FeedName(db.Document):
+    id_int = db.SequenceField(required=True)
+    type = db.StringField(required=True)
+    name = db.StringField(required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
+
 class FeedInventory(db.Document):
+    feed_name_id = db.StringField(required=True)
     id_int = db.SequenceField(required=True)
     feed_category = db.StringField(required=True)
     brand_name = db.StringField(required=True)
@@ -262,7 +271,7 @@ class FeedHistory(db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
-class FeedName(db.Document):
+class SuplemenName(db.Document):
     id_int = db.SequenceField(required=True)
     type = db.StringField(required=True)
     name = db.StringField(required=True)
@@ -270,6 +279,7 @@ class FeedName(db.Document):
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 class SuplemenInventory(db.Document):
+    suplemen_name_id = db.StringField(required=True)
     id_int = db.SequenceField(required=True)
     function = db.StringField(required=True)
     name = db.StringField(required=True)
@@ -291,12 +301,6 @@ class SuplemenUsed(db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
-class SuplemenName(db.Document):
-    id_int = db.SequenceField(required=True)
-    type = db.StringField(required=True)
-    name = db.StringField(required=True)
-    created_at = db.DateTimeField(default=datetime.datetime.now)
-    updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 class ElectricInventory(db.Document):
     id_int = db.SequenceField(required=True)
