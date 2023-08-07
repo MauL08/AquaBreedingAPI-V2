@@ -7,7 +7,9 @@ from fishapiv3.resources.helper import getYearToday
 import datetime
 import json
 from bson.json_util import dumps
-
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import get_jwt_identity
+from bson.objectid import ObjectId
 
 class PondsStatusApi(Resource):
     def get(self):
@@ -99,7 +101,8 @@ class PondStatusApi(Resource):
                                 "_id": "$fish_type",
                                 "fish_type": {"$first": "$fish_type"},
                                 "fish_amount": {"$sum": "$fish_amount"},
-                                "fish_total_weight": {"$sum": "$fish_total_weight"}
+                                "fish_total_weight": {"$sum": "$fish_total_weight"},
+                                "fish_seed_id": {"$first": "$fish_seed_id"},
                             }},
                             {"$sort": {"fish_type": -1}},
                             {"$project": {
@@ -122,15 +125,19 @@ class PondStatusApi(Resource):
                             {"$project": {
                                 "created_at": 0,
                                 "updated_at": 0,
+                                # "fish_seed_id": 1,
                             }},
                             {"$group": {
                                 "_id": "$fish_type",
                                 "fish_type": {"$first": "$fish_type"},
-                                "fish_amount": {"$sum": "$fish_amount"}
+                                "fish_amount": {"$sum": "$fish_amount"},
+                                "fish_category": {"$first": "$fish_category"},
+                                "fish_seed_id": {"$first": "$fish_seed_id"},
                             }},
                             {"$sort": {"fish_type": -1}},
                             {"$project": {
                                 "_id": 0,
+                                # "fish_seed_id": 1,  # Include the fish_seed_id field
                             }},
                         ],
                         'as': 'fish_live'
@@ -616,6 +623,8 @@ class PondDeactivationApi(Resource):
                 "fish_type": fish['type'],
                 "fish_amount": fish['amount'],
                 "fish_total_weight": fish['weight'],
+                "fish_seed_id": fish['fish_seed_id'],
+                "fish_category": fish['fish_category'],
             }
             # total_fish_harvested += fish['amount']
             # total_weight_harvested += fish['weight']
@@ -644,3 +653,89 @@ class PondDeactivationApi(Resource):
         response = {"message": "success to deactivation pond"}
         response = json.dumps(response, default=str)
         return Response(response, mimetype="application/json", status=200)
+
+class DeactivationRecapApi(Resource):
+    @jwt_required()
+    def get(self):
+        try:
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
+            farm_id = ObjectId(farm)
+
+            type = request.args.get('type') if request.args.get('type') else ""        
+            start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else datetime.datetime.strptime("2023-01-01", '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else datetime.datetime.strptime("2030-01-01", '%Y-%m-%d')
+    
+            pipeline = [
+                {
+                    '$match': {
+                        'created_at': {
+                            '$gte': start_date,
+                            '$lte': end_date,
+                        },
+                        "farm_id": farm_id,
+                        'fish_category': {
+                            '$regex': type,
+                            '$options': 'i'
+                        }
+                    }
+                },
+                {"$sort": {"created_at": 1}},
+                {'$lookup': {
+                    'from': 'pond',
+                    'let': {"pondid": "$pond_id"},
+                    'pipeline': [
+                        {'$match': {'$expr': {'$eq': ['$_id', '$$pondid']}}, },
+                        {"$project": {
+                            "_id": 1,
+                            "alias": 1,
+                            "location": 1,
+                            "created_at": 1,
+                        }}
+                    ],
+                    'as': 'pond_detail'
+                }},
+                {"$addFields": {
+                    "pond_detail": {"$first": "$pond_detail"},
+                }},
+            ]
+
+            testing = DeactivationRecap.objects.aggregate(pipeline)
+            temp = list(testing)
+            
+
+            response = json.dumps({
+                'status': 'success',
+                'data': temp,
+            }, default=str)
+            return Response(response, mimetype="application/json", status=200)
+        except Exception as e:
+            response = {"message": e}
+            response = json.dumps(response, default=str)
+            return Response(response, mimetype="application/json", status=400)
+    
+    @jwt_required()
+    def post(self):
+        try:
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
+
+            body = {
+                "pond_id": request.form.get('pond_id'),
+                "farm_id": farm,
+                "fish_seed_id": request.form.get('fish_seed_id'),
+                "fish_weight": request.form.get('fish_weight'),
+                "fish_amount": request.form.get('fish_amount'),
+                "fish_type": request.form.get('fish_type'),
+                "fish_category": request.form.get('fish_category'),
+                "fish_price": request.form.get('fish_price'),
+            }
+
+            DeactivationRecap(**body).save()
+            res = {"message": "success add deactivation recap"}
+            response = json.dumps(res, default=str)
+            return Response(response, mimetype="application/json", status=200)
+        except Exception as e:
+            response = {"message": e}
+            response = json.dumps(response, default=str)
+            return Response(response, mimetype="application/json", status=400)

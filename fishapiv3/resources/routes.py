@@ -122,8 +122,6 @@ def initialize_routes(api):
     # suplemen inventory
     api.add_resource(SuplemenInventoriesApi, '/api/inventory/suplemen')
     api.add_resource(SuplemenInventoryApi, '/api/inventory/suplemen/<id>')
-    api.add_resource(SuplemenNamesApi, '/api/inventory/suplemen/name')
-    api.add_resource(SuplemenNameApi, '/api/inventory/suplemen/name/<id>')
 
     # electric inventory
     api.add_resource(ElectricInventoriesApi, '/api/inventory/electric')
@@ -142,3 +140,6 @@ def initialize_routes(api):
 
     # chart fish
     api.add_resource(FishLiveChart, '/api/fishchart/<activation_id>')
+
+    # deactivation recap
+    api.add_resource(DeactivationRecapApi, '/api/recap/deactivation')

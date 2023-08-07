@@ -9,14 +9,20 @@ from flask_jwt_extended import get_jwt_identity
 from bson.objectid import ObjectId
 
 class SeedInventoriesApi(Resource):
+    @jwt_required()
     def get(self):
         try:
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
+            farm_id = ObjectId(farm)
+            
             type = request.args.get('type') if request.args.get('type') else ""
 
             pipeline = [
                 {"$sort": {"id_int": 1}},
                 {
                     '$match': {
+                        "farm_id": farm_id,
                         'fish_seed_category': {
                             '$regex': type,
                             '$options': 'i'
@@ -36,13 +42,14 @@ class SeedInventoriesApi(Resource):
             response = {"message": e}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
-    # @jwt_required()
+        
+    @jwt_required()
     def post(self):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
             body = {
-                # "farm_id": farm,
+                "farm_id": farm,
                 "fish_seed_category": request.form.get('fish_seed_category', None),
                 "fish_type": request.form.get('fish_type', None),
                 "brand_name": request.form.get('brand_name', None),
@@ -82,13 +89,10 @@ class SeedInventoryApi(Resource):
             response = {"message": e}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
-        
+    
     def put(self, id):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
             body = {
-                # "farm_id": farm,
                 "id_int": int(id),
                 "fish_seed_category": request.form.get('fish_seed_category', None),
                 "fish_type": request.form.get('fish_type', None),
@@ -111,8 +115,6 @@ class SeedInventoryApi(Resource):
 
     def delete(self, id):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
             inventory = SeedInventory.objects.get(id_int = int(id)).delete()
             response = {"message": "success delete seed inventory"}
             response = json.dumps(response, default=str)
@@ -123,20 +125,52 @@ class SeedInventoryApi(Resource):
             return Response(response, mimetype="application/json", status=400)
 
 class FeedInventoriesApi(Resource):
+    @jwt_required()
+
     def get(self):
         try:
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
+            farm_id = ObjectId(farm)
+
             type = request.args.get('type') if request.args.get('type') else ""
 
             pipeline = [
                 {"$sort": {"id_int": 1}},
                 {
                     '$match': {
+                        "farm_id": farm_id,
                         'feed_category': {
                             '$regex': type,
                             '$options': 'i'
                         }
                     }
                 },
+                {'$lookup': {
+                    'from': 'feed_name',
+                    'let': {"feednameid": "$feed_name_id"},
+                    'pipeline': [
+                        {'$match': {'$expr': {'$eq': ['$_id', '$$feednameid']}}},
+                        {"$project": {
+                            "_id": 1,
+                            "id_int": 1,
+                            "type": 1,
+                            "name": 1,
+                            "description": 1,
+                            "producer": 1,
+                            "protein": 1,
+                            "carbohydrate": 1,
+                            "min_expired_period": 1,
+                            "max_expired_period": 1,
+                            "image": 1,
+                            "created_at": 1,
+                        }}
+                    ],
+                    'as': 'feed'
+                }},
+                {"$addFields": {
+                    "feed": {"$first": "$feed"},
+                }},
             ]
            
             testing = FeedInventory.objects.aggregate(pipeline)
@@ -150,25 +184,27 @@ class FeedInventoriesApi(Resource):
             response = {"message": e}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
-    # @jwt_required()
+    @jwt_required()
     def post(self):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
             body = {
-                # "farm_id": farm,
-                "feed_category": request.form.get('feed_category', None),
+                "farm_id": farm,
+                # "type": request.form.get('type', None),
+                # "name": request.form.get('name', None),
+                # "description": request.form.get('description', None),
+                # "producer": request.form.get('producer', None),
+                # "protein": request.form.get('protein', None),
+                # "carbohydrate": request.form.get('carbohydrate', None),
+                # "min_expired_period": request.form.get('min_expired_period', None),
+                # "max_expired_period": request.form.get('max_expired_period', None),
+                # "image": request.form.get('image', None),
                 "feed_name_id": request.form.get('feed_name_id', None),
+                "feed_category": request.form.get('feed_category', None),
                 "brand_name": request.form.get('brand_name', None),
-                "description": request.form.get('description', None),
                 "price": request.form.get('price', None),
                 "amount": request.form.get('amount', None),
-                "producer": request.form.get('producer', None),
-                "protein": request.form.get('protein', None),
-                "carbohydrate": request.form.get('carbohydrate', None),
-                "min_expired_period": request.form.get('min_expired_period', None),
-                "max_expired_period": request.form.get('max_expired_period', None),
-                "image": request.form.get('image', None),
             }
             inventory = FeedInventory(**body).save()
             id = inventory.id
@@ -202,6 +238,31 @@ class FeedInventoryApi(Resource):
                 # {"$addFields": {
                 #     "feed_detail": {"$first": "$feed_detail"},
                 # }},
+                {'$lookup': {
+                    'from': 'feed_name',
+                    'let': {"feednameid": "$feed_name_id"},
+                    'pipeline': [
+                        {'$match': {'$expr': {'$eq': ['$_id', '$$feednameid']}}},
+                        {"$project": {
+                            "_id": 1,
+                            "id_int": 1,
+                            "type": 1,
+                            "name": 1,
+                            "description": 1,
+                            "producer": 1,
+                            "protein": 1,
+                            "carbohydrate": 1,
+                            "min_expired_period": 1,
+                            "max_expired_period": 1,
+                            "image": 1,
+                            "created_at": 1,
+                        }}
+                    ],
+                    'as': 'feed'
+                }},
+                {"$addFields": {
+                    "feed": {"$first": "$feed"},
+                }},
             ]
      
             testing = FeedInventory.objects.aggregate(pipeline)
@@ -227,19 +288,25 @@ class FeedInventoryApi(Resource):
             body = {
                 # "farm_id": farm,
                 "id_int": int(id),
+                # "type": request.form.get('type', None),
+                # "name": request.form.get('name', None),
+                # "description": request.form.get('description', None),
+                # "producer": request.form.get('producer', None),
+                # "protein": request.form.get('protein', None),
+                # "carbohydrate": request.form.get('carbohydrate', None),
+                # "min_expired_period": request.form.get('min_expired_period', None),
+                # "max_expired_period": request.form.get('max_expired_period', None),
+                # "image": request.form.get('image', None),
                 "feed_category": request.form.get('feed_category', None),
-                "feed_name_id": request.form.get('feed_name_id', None),
                 "brand_name": request.form.get('brand_name', None),
-                "description": request.form.get('description', None),
                 "price": request.form.get('price', None),
                 "amount": request.form.get('amount', None),
-                "producer": request.form.get('producer', None),
-                "protein": request.form.get('protein', None),
-                "carbohydrate": request.form.get('carbohydrate', None),
-                "min_expired_period": request.form.get('min_expired_period', None),
-                "max_expired_period": request.form.get('max_expired_period', None),
-                "image": request.form.get('image', None),
             }
+
+            feed_name_id = request.form.get('feed_name_id', None)
+            feed_name = FeedName.objects.get(id=feed_name_id)
+            body["feed_name_id"] = feed_name.id
+
             inventory = FeedInventory.objects.get(id_int = int(id)).update(**body)
             response = {"message": "success update feed inventory", "data": body}
             response = json.dumps(response, default=str)
@@ -263,14 +330,20 @@ class FeedInventoryApi(Resource):
             return Response(response, mimetype="application/json", status=400)
         
 class FeedNamesApi(Resource):
+    @jwt_required()
     def get(self):
         try:
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
+            farm_id = ObjectId(farm)
+
             type = request.args.get('type') if request.args.get('type') else ""
 
             pipeline = [
                 {"$sort": {"id_int": 1}},
                 {
                     '$match': {
+                        "farm_id": farm_id,
                         'type': {
                             '$regex': type,
                             '$options': 'i'
@@ -291,14 +364,22 @@ class FeedNamesApi(Resource):
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
 
+    @jwt_required()
     def post(self):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
             body = {
-                # "farm_id": farm,
+                "farm_id": farm,
                 "type": request.form.get('type', None),
                 "name": request.form.get('name', None),
+                "description": request.form.get('description', None),
+                "producer": request.form.get('producer', None),
+                "protein": request.form.get('protein', None),
+                "carbohydrate": request.form.get('carbohydrate', None),
+                "min_expired_period": request.form.get('min_expired_period', None),
+                "max_expired_period": request.form.get('max_expired_period', None),
+                "image": request.form.get('image', None),
             }
             feed_name = FeedName(**body).save()
             id = feed_name.id
@@ -311,7 +392,81 @@ class FeedNamesApi(Resource):
             return Response(response, mimetype="application/json", status=400)
         
 class FeedNameApi(Resource):
-     def delete(self, id):
+    def get(self, id):
+        try:
+            pipeline = [
+                {"$match": {"id_int": int(id)}},
+                # {'$lookup': {
+                #     'from': 'feed_name',
+                #     'let': {"feednameid": "$feed_name_id"},
+                #     'pipeline': [
+                #         {'$match': {'$expr': {'$eq': ['$_id', '$$feednameid']}}},
+                #         {"$project": {
+                #             "_id": 1,
+                #             "id_int": 1,
+                #             "name": 1,
+                           
+                #         }}
+                #     ],
+                #     'as': 'feed_detail',
+                # }},
+                # {"$addFields": {
+                #     "feed_detail": {"$first": "$feed_detail"},
+                # }},
+            ]
+     
+            testing = FeedName.objects.aggregate(pipeline)
+            temp = list(testing)
+            if len(temp) == 0:
+                res = {"message": 'no data found'}
+                response = json.dumps(res, default=str)
+                return Response(response, mimetype="application/json", status=200)
+            response = json.dumps({
+                'status': 'success',
+                'data': temp[0],
+            }, default=str)
+            return Response(response, mimetype="application/json", status=200)
+        except Exception as e:
+            response = {"message": e}
+            response = json.dumps(response, default=str)
+            return Response(response, mimetype="application/json", status=400)
+        
+    def put(self, id):
+        try:
+            # current_user = get_jwt_identity()
+            # farm = str(current_user['farm_id'])
+            body = {
+                # "farm_id": farm,
+                "id_int": int(id),
+                # "type": request.form.get('type', None),
+                # "name": request.form.get('name', None),
+                # "description": request.form.get('description', None),
+                # "producer": request.form.get('producer', None),
+                # "protein": request.form.get('protein', None),
+                # "carbohydrate": request.form.get('carbohydrate', None),
+                # "min_expired_period": request.form.get('min_expired_period', None),
+                # "max_expired_period": request.form.get('max_expired_period', None),
+                # "image": request.form.get('image', None),
+                "type": request.form.get('type', None),
+                "name": request.form.get('name', None),
+                "description": request.form.get('description', None),
+                "producer": request.form.get('producer', None),
+                "protein": request.form.get('protein', None),
+                "carbohydrate": request.form.get('carbohydrate', None),
+                "min_expired_period": request.form.get('min_expired_period', None),
+                "max_expired_period": request.form.get('max_expired_period', None),
+                "image": request.form.get('image', None),
+            }
+            inventory = FeedName.objects.get(id_int = int(id)).update(**body)
+            response = {"message": "success update feed inventory", "data": body}
+            response = json.dumps(response, default=str)
+            return Response(response, mimetype="application/json", status=200)
+        except Exception as e:
+            response = {"message": str(e)}
+            response = json.dumps(response, default=str)
+            return Response(response, mimetype="application/json", status=400)
+        
+    def delete(self, id):
         try:
             # current_user = get_jwt_identity()
             # farm = str(current_user['farm_id'])
@@ -325,16 +480,32 @@ class FeedNameApi(Resource):
             return Response(response, mimetype="application/json", status=400)
 
 class SuplemenInventoriesApi(Resource):
+    @jwt_required()
+
     def get(self):
         try:
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
+            farm_id = ObjectId(farm)
+
             type = request.args.get('type') if request.args.get('type') else ""
+            name = request.args.get('name') if request.args.get('name') else ""
 
             pipeline = [
                 {"$sort": {"id_int": 1}},
                 {
                     '$match': {
+                        "farm_id": farm_id,
                         'function': {
                             '$regex': type,
+                            '$options': 'i'
+                        }
+                    }
+                },
+                {
+                    '$match': {
+                        'name': {
+                            '$regex': name,
                             '$options': 'i'
                         }
                     }
@@ -352,14 +523,13 @@ class SuplemenInventoriesApi(Resource):
             response = {"message": e}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
-    # @jwt_required()
+    @jwt_required()
     def post(self):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
             body = {
-                # "farm_id": farm,
-                "suplemen_name_id": request.form.get('suplemen_name_id', None),
+                "farm_id": farm,
                 "function": request.form.get('function', None),
                 "name": request.form.get('name', None),
                 "description": request.form.get('description', None),
@@ -404,12 +574,8 @@ class SuplemenInventoryApi(Resource):
         
     def put(self, id):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
             body = {
-                # "farm_id": farm,
                 "id_int": int(id),
-                "suplemen_name_id": request.form.get('suplemen_name_id', None),
                 "function": request.form.get('function', None),
                 "name": request.form.get('name', None),
                 "description": request.form.get('description', None),
@@ -431,8 +597,6 @@ class SuplemenInventoryApi(Resource):
 
     def delete(self, id):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
             inventory = SuplemenInventory.objects.get(id_int = int(id)).delete()
             response = {"message": "success delete suplemen inventory"}
             response = json.dumps(response, default=str)
@@ -441,89 +605,33 @@ class SuplemenInventoryApi(Resource):
             response = {"message": str(e)}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
-        
-class SuplemenNamesApi(Resource):
-    def get(self):
-        try:
-            type = request.args.get('type') if request.args.get('type') else ""
-
-            pipeline = [
-                {"$sort": {"id_int": 1}},
-                {
-                    '$match': {
-                        'type': {
-                            '$regex': type,
-                            '$options': 'i'
-                        }
-                    }
-                }
-            ]
-
-            testing = SuplemenName.objects.aggregate(pipeline)
-            temp = list(testing)
-            response = json.dumps({
-                'status': 'success',
-                'data': temp,
-            }, default=str)
-            return Response(response, mimetype="application/json", status=200)
-        except Exception as e:
-            response = {"message": e}
-            response = json.dumps(response, default=str)
-            return Response(response, mimetype="application/json", status=400)
-
-    def post(self):
-        try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
-            body = {
-                # "farm_id": farm,
-                "type": request.form.get('type', None),
-                "name": request.form.get('name', None),
-            }
-            feed_name = SuplemenName(**body).save()
-            id = feed_name.id
-            res = {"message": "success add feed name to db", "id": id, "data": body}
-            response = json.dumps(res, default=str)
-            return Response(response, mimetype="application/json", status=200)
-        except Exception as e:
-            response = {"message": str(e)}
-            response = json.dumps(response, default=str)
-            return Response(response, mimetype="application/json", status=400)
-
-class SuplemenNameApi(Resource):
-     def delete(self, id):
-        try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
-            inventory = SuplemenName.objects.get(id_int = int(id)).delete()
-            response = {"message": "success delete suplemen name on inventory"}
-            response = json.dumps(response, default=str)
-            return Response(response, mimetype="application/json", status=200)
-        except Exception as e:
-            response = {"message": str(e)}
-            response = json.dumps(response, default=str)
-            return Response(response, mimetype="application/json", status=400)
 
 class ElectricInventoriesApi(Resource):
+    @jwt_required()
+
     def get(self):
         try:
-            year = request.args.get('year') if request.args.get('year') else 2023
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
+            farm_id = ObjectId(farm)
+
+            start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else datetime.datetime.strptime("2023-01-01", '%Y-%m-%d')
+            end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else datetime.datetime.strptime("2030-01-01", '%Y-%m-%d')
             type = request.args.get('type') if request.args.get('type') else ""
 
             pipeline = [
                 {"$sort": {"id_int": 1}},
                 {
                     '$match': {
-                        '$expr': {
-                            '$eq': [
-                                {'$year': '$created_at'},
-                                int(year)
-                            ]
+                        'created_at': {
+                            '$gte': start_date,
+                            '$lte': end_date,
                         }
                     }
                 },
                 {
                     '$match': {
+                        "farm_id": farm_id,
                         'type': {
                             '$regex': type,
                             '$options': 'i'
@@ -543,18 +651,20 @@ class ElectricInventoriesApi(Resource):
             response = {"message": e}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
-    # @jwt_required()
+    @jwt_required()
     def post(self):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
             body = {
-                # "farm_id": farm,
+                "farm_id": farm,
                 "name": request.form.get('name', None),
                 "price": request.form.get('price', None),
                 "type": request.form.get('type', None),
                 "daya": request.form.get('daya', None),
                 "image": request.form.get('image', None),
+                "id_token": request.form.get('id_token', None),
+                "month": request.form.get('month', None)
             }
             inventory = ElectricInventory(**body).save()
             id = inventory.id
@@ -588,16 +698,16 @@ class ElectricInventoryApi(Resource):
         
     def put(self, id):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
+
             body = {
-                # "farm_id": farm,
                 "id_int": int(id),
                 "name": request.form.get('name', None),
                 "price": request.form.get('price', None),
                 "type": request.form.get('type', None),
                 "daya": request.form.get('daya', None),
                 "image": request.form.get('image', None),
+                "id_token": request.form.get('id_token', None),
+                "month": request.form.get('month', None)
             }
             inventory = ElectricInventory.objects.get(id_int = int(id)).update(**body)
             response = {"message": "success update electric inventory", "data": body}
@@ -610,8 +720,6 @@ class ElectricInventoryApi(Resource):
 
     def delete(self, id):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
             inventory = ElectricInventory.objects.get(id_int = int(id)).delete()
             response = {"message": "success delete electric inventory"}
             response = json.dumps(response, default=str)
@@ -622,8 +730,13 @@ class ElectricInventoryApi(Resource):
             return Response(response, mimetype="application/json", status=400)
 
 class AssetInventoriesApi(Resource):
+    @jwt_required()
     def get(self):
         try:
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
+            farm_id = ObjectId(farm)
+
             type = request.args.get('type') if request.args.get('type') else ""
             start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else datetime.datetime.strptime("2023-01-01", '%Y-%m-%d')
             end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else datetime.datetime.strptime("2030-01-01", '%Y-%m-%d')
@@ -632,6 +745,7 @@ class AssetInventoriesApi(Resource):
                 {"$sort": {"id_int": 1}},
                 {
                     '$match': {
+                        "farm_id": farm_id,
                         'asset_category': {
                             '$regex': type,
                             '$options': 'i'
@@ -655,13 +769,13 @@ class AssetInventoriesApi(Resource):
             response = {"message": e}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
-    # @jwt_required()
+    @jwt_required()
     def post(self):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
             body = {
-                # "farm_id": farm,
+                "farm_id": farm,
                 "asset_category": request.form.get('asset_category', None),
                 "name": request.form.get('name', None),
                 "description": request.form.get('description', None),
@@ -701,10 +815,7 @@ class AssetInventoryApi(Resource):
         
     def put(self, id):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
-            body = {
-                # "farm_id": farm,
+            body = {       
                 "id_int": int(id),
                 "asset_category": request.form.get('asset_category', None),
                 "name": request.form.get('name', None),
@@ -724,8 +835,6 @@ class AssetInventoryApi(Resource):
 
     def delete(self, id):
         try:
-            # current_user = get_jwt_identity()
-            # farm = str(current_user['farm_id'])
             inventory = AssetInventory.objects.get(id_int = int(id)).delete()
             response = {"message": "success delete asset inventory"}
             response = json.dumps(response, default=str)

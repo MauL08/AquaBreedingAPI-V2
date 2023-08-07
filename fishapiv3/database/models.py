@@ -113,7 +113,7 @@ class FishTransfer(db.Document):
 
 class SeedInventory(db.Document):
     id_int = db.SequenceField(required=True)
-    # farm_id = db.ReferenceField(Farm, required=True)
+    farm_id = db.ReferenceField(Farm, required=True)
     fish_seed_category = db.StringField(required=True)
     fish_type = db.StringField(required=True)
     brand_name = db.StringField(required=True)
@@ -131,6 +131,7 @@ class FishLog(db.Document):
     fish_type_option = ("nila hitam", "nila merah", "lele", "patin", "mas")
 
     pond_id = db.ReferenceField(Pond, required=True)
+    fish_seed_id= db.ReferenceField(SeedInventory, required=True)
     pond_activation_id = db.ObjectIdField(required=False, default=None)
     fish_death_id = db.ObjectIdField(required=False, default=None)
     fish_transfer_id = db.ObjectIdField(required=False, default=None)
@@ -138,7 +139,7 @@ class FishLog(db.Document):
     fish_type = db.StringField(required=True, choices=fish_type_option)
     fish_category = db.StringField(required=True)
     fish_amount = db.IntField(required=True)
-    fish_total_weight = db.IntField(default=None)
+    fish_total_weight = db.FloatField(default=None)
     fish_size = db.StringField(default=None)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
@@ -188,26 +189,6 @@ class WeeklyWaterQuality(db.Document):
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 
-class PondTreatment(db.Document):
-    treatment_type_option = ("ringan", "berat", "pergantian air")
-    carbohydrate_type_option = ("", "gula", "molase", "terigu", "tapioka")
-
-    pond_id = db.ReferenceField(Pond, required=True)
-    pond_activation_id = db.ReferenceField(PondActivation, required=True)
-    treatment_type = db.StringField(
-        required=True, choices=treatment_type_option)
-    water_change = db.IntField()
-    salt = db.FloatField()
-    probiotic_culture = db.FloatField()
-    carbohydrate = db.FloatField()
-    carbohydrate_type = db.StringField(
-        required=True, choices=carbohydrate_type_option, default="")
-    description = db.StringField(default="")
-    treatment_at = db.DateTimeField(default=datetime.datetime.now)
-    created_at = db.DateTimeField(default=datetime.datetime.now)
-    updated_at = db.DateTimeField(default=datetime.datetime.now)
-
-
 class OptionTable(db.Document):
     type = db.StringField(required=True)
     option = db.StringField(required=True)
@@ -224,6 +205,7 @@ class Breeder(db.Document):
 
 class SeedUsed(db.Document):
     fish_seed_id = db.ReferenceField(SeedInventory, required=True)
+    farm_id = db.ReferenceField(Farm, required=True)
     original_amount = db.IntField(required=True)
     usage = db.IntField(required=True)
     pond = db.StringField(required=True)
@@ -232,19 +214,10 @@ class SeedUsed(db.Document):
 
 class FeedName(db.Document):
     id_int = db.SequenceField(required=True)
+    farm_id = db.ReferenceField(Farm, required=True)
     type = db.StringField(required=True)
     name = db.StringField(required=True)
-    created_at = db.DateTimeField(default=datetime.datetime.now)
-    updated_at = db.DateTimeField(default=datetime.datetime.now)
-
-class FeedInventory(db.Document):
-    feed_name_id = db.StringField(required=True)
-    id_int = db.SequenceField(required=True)
-    feed_category = db.StringField(required=True)
-    brand_name = db.StringField(required=True)
     description = db.StringField(required=True)
-    price = db.IntField(required=True)
-    amount = db.FloatField(required=True)
     producer = db.StringField(required=True)
     protein = db.IntField(required=True)
     carbohydrate = db.IntField(required=True)
@@ -254,8 +227,20 @@ class FeedInventory(db.Document):
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
+class FeedInventory(db.Document):
+    feed_name_id = db.ReferenceField(FeedName, required=True)
+    farm_id = db.ReferenceField(Farm, required=True)
+    id_int = db.SequenceField(required=True)
+    feed_category = db.StringField(required=True)
+    brand_name = db.StringField(required=True)
+    price = db.IntField(required=True)
+    amount = db.FloatField(required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
+
 class FeedUsed(db.Document):
     fish_feed_id = db.ReferenceField(FeedInventory, required=True)
+    farm_id = db.ReferenceField(Farm, required=True)
     original_amount = db.FloatField(required=True)
     usage = db.FloatField(required=True)
     pond = db.StringField(required=True)
@@ -265,22 +250,16 @@ class FeedUsed(db.Document):
 class FeedHistory(db.Document):
     pond_id = db.ReferenceField(Pond, required=True)
     fish_feed_id = db.ReferenceField(FeedInventory, required=True)
+    farm_id = db.ReferenceField(Farm, required=True)
     pond_activation_id = db.ReferenceField(PondActivation, required=True)
     feed_dose = db.FloatField(required=True)
     feed_history_time = db.DateTimeField(default=datetime.datetime.now)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
-class SuplemenName(db.Document):
-    id_int = db.SequenceField(required=True)
-    type = db.StringField(required=True)
-    name = db.StringField(required=True)
-    created_at = db.DateTimeField(default=datetime.datetime.now)
-    updated_at = db.DateTimeField(default=datetime.datetime.now)
-
 class SuplemenInventory(db.Document):
-    suplemen_name_id = db.StringField(required=True)
     id_int = db.SequenceField(required=True)
+    farm_id = db.ReferenceField(Farm, required=True)
     function = db.StringField(required=True)
     name = db.StringField(required=True)
     description = db.StringField(required=True)
@@ -295,31 +274,71 @@ class SuplemenInventory(db.Document):
 
 class SuplemenUsed(db.Document):
     fish_suplemen_id = db.ReferenceField(SuplemenInventory, required=True)
+    farm_id = db.ReferenceField(Farm, required=True)
     original_amount = db.FloatField(required=True)
     usage = db.FloatField(required=True)
     pond = db.StringField(required=True)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
+class PondTreatment(db.Document):
+    treatment_type_option = ("ringan", "berat", "pergantian air")
+    farm_id = db.ReferenceField(Farm, required=True)
+
+    probiotic_culture_id = db.ReferenceField(SuplemenInventory, required=True)
+    carbon_id = db.ReferenceField(SuplemenInventory, default=None)
+    salt_id = db.ReferenceField(SuplemenInventory, default=None)
+
+    pond_id = db.ReferenceField(Pond, required=True)
+    pond_activation_id = db.ReferenceField(PondActivation, required=True)
+    treatment_type = db.StringField(
+        required=True, choices=treatment_type_option)
+    water_change = db.IntField()
+    salt = db.FloatField(default=0.0)
+    probiotic_culture_name = db.StringField(default='')
+    probiotic_culture = db.FloatField(default=0.0)
+    carbohydrate = db.FloatField(default=0.0)
+    carbohydrate_type = db.StringField(default="")
+    description = db.StringField(default="")
+    treatment_at = db.DateTimeField(default=datetime.datetime.now)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 class ElectricInventory(db.Document):
     id_int = db.SequenceField(required=True)
+    farm_id = db.ReferenceField(Farm, required=True)
     type = db.StringField(required=True)
     name = db.StringField(required=True)
     daya = db.StringField()
     price = db.IntField(required=True)
+    id_token = db.StringField()
+    month = db.StringField()
     image = db.StringField(required=True)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 class AssetInventory(db.Document):
     id_int = db.SequenceField(required=True)
+    farm_id = db.ReferenceField(Farm, required=True)
     asset_category = db.StringField(required=True)
     name = db.StringField(required=True)
     description = db.StringField(required=True)
     amount = db.IntField(required=True)
     price = db.IntField(required=True)
     image = db.StringField(required=True)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
+
+class DeactivationRecap(db.Document):
+    id_int = db.SequenceField(required=True)
+    pond_id = db.ReferenceField(Pond, required=True)
+    farm_id = db.ReferenceField(Farm, required=True)
+    fish_seed_id = db.ReferenceField(SeedInventory, required=True)
+    fish_weight = db.FloatField(required=True)
+    fish_amount = db.IntField(required=True)
+    fish_type = db.StringField(required=True)
+    fish_category = db.StringField(required=True)
+    fish_price = db.IntField(required=True)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 

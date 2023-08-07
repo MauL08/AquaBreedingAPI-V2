@@ -7,11 +7,19 @@ import calendar
 from datetime import timedelta
 import json
 from bson.json_util import dumps
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import get_jwt_identity
+from bson.objectid import ObjectId
 
 
 class FeedHistorysApi(Resource):
+    @jwt_required()
+
     def get(self):
         try:
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
+            farm_id = ObjectId(farm)
             # filter date
             # get args with default input "all"
             filter_date = request.args.get("filter_date", "all")
@@ -37,7 +45,10 @@ class FeedHistorysApi(Resource):
                     'let': {"pondid": "$pond_id"},
                     'pipeline': [
                         {'$match': {
-                            '$expr': {'$and': [{'$eq': ['$_id', '$$pondid']}]}}},
+                            '$expr': {'$and': [{'$eq': ['$_id', '$$pondid']}]}, 
+                            "farm_id": farm_id,
+
+                            }},
                         {"$project": {
                             "created_at": 0,
                             "updated_at": 0,
@@ -73,6 +84,7 @@ class FeedHistorysApi(Resource):
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
 
+    @jwt_required()
     def post(self):
         try:
             pond_id = request.form.get("pond_id", None)
@@ -90,8 +102,13 @@ class FeedHistorysApi(Resource):
             if feed_history_time != None:
                 feed_history_time = datetime.datetime.fromisoformat(
                     feed_history_time)
+                
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
+
             body = {
                 "pond_id": pond_id,
+                "farm_id": farm,
                 "pond_activation_id": pond_activation.id,
                 "fish_feed_id": fish_feed_id,
                 "feed_dose": request.form.get("feed_dose", None),

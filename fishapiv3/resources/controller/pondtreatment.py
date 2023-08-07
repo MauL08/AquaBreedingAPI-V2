@@ -3,13 +3,27 @@ from fishapiv3.database.models import *
 from flask_restful import Resource
 import datetime
 import json
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import get_jwt_identity
+from bson.objectid import ObjectId
 
 
 class PondTreatmentsApi(Resource):
+    @jwt_required()
+
     def get(self):
         try:
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
+            farm_id = ObjectId(farm)
+            
             pipeline = [
                 {"$sort": {"created_at": -1}},
+                {
+                    '$match': {
+                        "farm_id": farm_id,
+                    }
+                },
                 {'$lookup': {
                     'from': 'pond',
                     'let': {"pondid": "$pond_id"},
@@ -59,8 +73,12 @@ class PondTreatmentsApi(Resource):
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
 
+    @jwt_required()
     def post(self):
         try:
+            current_user = get_jwt_identity()
+            farm = str(current_user['farm_id'])
+            
             pond_id = request.form.get("pond_id", None)
             pond = Pond.objects.get(id=pond_id)
             if pond['isActive'] == False:
@@ -75,6 +93,7 @@ class PondTreatmentsApi(Resource):
                 fishes = json.loads(fishes)
                 body = {
                     "pond_id": pond_id,
+                    "farm_id": farm,
                     "pond_activation_id": pond_activation.id,
                     "treatment_type": treatment_type,
                     "water_change": 100,
@@ -109,18 +128,43 @@ class PondTreatmentsApi(Resource):
                     fishlog = FishLog(**data).save()
                     print(data)
             elif treatment_type == "ringan":
+
+                prob_id =request.form.get("probiotic_culture_id", None)
+                carb_id = request.form.get("carbon_id", None)
+                salt_id = request.form.get("salt_id", None)
+
                 body = {
                     "pond_id": pond_id,
+                    "farm_id": farm,
+                    "probiotic_culture_id":prob_id ,
                     "pond_activation_id": pond_activation.id,
                     "treatment_type": treatment_type,
                     "description": request.form.get("description", None),
                     "water_change": request.form.get("water_change", 0),
                     "salt": request.form.get("salt", None),
+                    "probiotic_culture_name": request.form.get("probiotic_culture_name", None),
                     "probiotic_culture": request.form.get("probiotic_culture", None),
                     "carbohydrate": request.form.get("carbohydrate", None),
                     "carbohydrate_type": request.form.get("carbohydrate_type", None),
                     "treatment_at": request.form.get("treatment_at", datetime.datetime.now())
                 }
+
+                get_suplemen_by_prob = SuplemenInventory.objects.get(id=prob_id)
+                get_suplemen_by_prob.amount -= float(request.form.get("probiotic_culture", None))
+                get_suplemen_by_prob.save()
+
+                if carb_id != None:
+                    body['carbon_id']: carb_id
+                    get_suplemen_by_carb = SuplemenInventory.objects.get(id=carb_id)
+                    get_suplemen_by_carb.amount -= float(request.form.get("carbohydrate", None))
+                    get_suplemen_by_carb.save()
+
+                if salt_id != None:
+                    body['salt_id']: salt_id
+                    get_suplemen_by_salt = SuplemenInventory.objects.get(id=salt_id)
+                    get_suplemen_by_salt.amount -= float(request.form.get("salt", None))
+                    get_suplemen_by_salt.save()
+
                 pondtreatment = PondTreatment(**body).save()
                 id = pondtreatment.id
             elif treatment_type == "pergantian air":

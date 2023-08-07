@@ -146,6 +146,8 @@ class FishDeathsApi(Resource):
                     "fish_death_id": id,
                     "type_log": "death",
                     "fish_type": fish['type'],
+                    "fish_seed_id": fish['fish_seed_id'],
+                    "fish_category": fish['fish_category'],
                     "fish_amount": int(fish['amount']) * -1
                 }
                 fishlog = FishLog(**data).save()
