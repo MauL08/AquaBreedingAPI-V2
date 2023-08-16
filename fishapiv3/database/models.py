@@ -285,7 +285,7 @@ class PondTreatment(db.Document):
     treatment_type_option = ("ringan", "berat", "pergantian air")
     farm_id = db.ReferenceField(Farm, required=True)
 
-    probiotic_culture_id = db.ReferenceField(SuplemenInventory, required=True)
+    probiotic_culture_id = db.ReferenceField(SuplemenInventory, default=None)
     carbon_id = db.ReferenceField(SuplemenInventory, default=None)
     salt_id = db.ReferenceField(SuplemenInventory, default=None)
 

@@ -136,7 +136,6 @@ class PondTreatmentsApi(Resource):
                 body = {
                     "pond_id": pond_id,
                     "farm_id": farm,
-                    "probiotic_culture_id":prob_id ,
                     "pond_activation_id": pond_activation.id,
                     "treatment_type": treatment_type,
                     "description": request.form.get("description", None),
@@ -149,18 +148,20 @@ class PondTreatmentsApi(Resource):
                     "treatment_at": request.form.get("treatment_at", datetime.datetime.now())
                 }
 
-                get_suplemen_by_prob = SuplemenInventory.objects.get(id=prob_id)
-                get_suplemen_by_prob.amount -= float(request.form.get("probiotic_culture", None))
-                get_suplemen_by_prob.save()
+                if prob_id != '':
+                    body['probiotic_culture_id'] = prob_id
+                    get_suplemen_by_prob = SuplemenInventory.objects.get(id=prob_id)
+                    get_suplemen_by_prob.amount -= float(request.form.get("probiotic_culture", None))
+                    get_suplemen_by_prob.save()
 
-                if carb_id != None:
-                    body['carbon_id']: carb_id
+                if carb_id != '':
+                    body['carbon_id'] = carb_id
                     get_suplemen_by_carb = SuplemenInventory.objects.get(id=carb_id)
                     get_suplemen_by_carb.amount -= float(request.form.get("carbohydrate", None))
                     get_suplemen_by_carb.save()
 
-                if salt_id != None:
-                    body['salt_id']: salt_id
+                if salt_id != '':
+                    body['salt_id'] = salt_id
                     get_suplemen_by_salt = SuplemenInventory.objects.get(id=salt_id)
                     get_suplemen_by_salt.amount -= float(request.form.get("salt", None))
                     get_suplemen_by_salt.save()

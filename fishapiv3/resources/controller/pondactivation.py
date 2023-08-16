@@ -540,16 +540,23 @@ class PondActivationApi(Resource):
         else:
             isWaterPreparation = False
         water_level = request.form.get("water_level", None)
-        activated_at = request.form.get(
-            "activated_at", datetime.datetime.now())
+
+        active_at = request.form.get('active_at')
+
         pond_activation_data = {
             "id_int": id_int,
             "pond_id": pond_id,
             "isFinish": False,
             "isWaterPreparation": isWaterPreparation,
             "water_level": water_level,
-            "activated_at": activated_at
         }
+
+        if active_at != '':
+            pond_activation_data['activated_at'] = active_at
+        else :
+            pond_activation_data['activated_at'] = request.form.get(
+                        "activated_at", datetime.datetime.now())
+        
         pondActivation = PondActivation(**pond_activation_data).save()
         pondActivation_id = pondActivation.id
         if isWaterPreparation == True:
