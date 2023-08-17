@@ -668,8 +668,7 @@ class DeactivationRecapApi(Resource):
             current_user = get_jwt_identity()
             farm = str(current_user['farm_id'])
             farm_id = ObjectId(farm)
-
-            type = request.args.get('type') if request.args.get('type') else ""        
+    
             start_date = datetime.datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else datetime.datetime.strptime("2023-01-01", '%Y-%m-%d')
             end_date = datetime.datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') + datetime.timedelta(days=1) if request.args.get('end_date') else datetime.datetime.strptime("2030-01-01", '%Y-%m-%d')
     
@@ -681,10 +680,6 @@ class DeactivationRecapApi(Resource):
                             '$lte': end_date,
                         },
                         "farm_id": farm_id,
-                        'fish_category': {
-                            '$regex': type,
-                            '$options': 'i'
-                        }
                     }
                 },
                 {"$sort": {"created_at": 1}},

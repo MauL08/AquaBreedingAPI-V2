@@ -63,6 +63,7 @@ class SeedHistoryApi(Resource):
                             "fish_type": 1,
                             "brand_name": 1,
                             "price": 1,
+                            "total_price": 1,
                             "created_at": 1,
                         }}
                     ],
