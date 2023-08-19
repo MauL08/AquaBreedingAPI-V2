@@ -552,10 +552,18 @@ class PondActivationApi(Resource):
         }
 
         if active_at != '':
-            pond_activation_data['activated_at'] = active_at
+            pond_activation_data['created_at'] = datetime.datetime.strptime(active_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
+            pond_activation_data['activated_at'] = datetime.datetime.strptime(active_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
         else :
-            pond_activation_data['activated_at'] = request.form.get(
-                        "activated_at", datetime.datetime.now())
+            three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)  # Approximating months as 30 days
+            pond_activation_data['created_at'] = three_months_ago
+            pond_activation_data['activated_at'] = three_months_ago
+
+        # if active_at != '':
+        #     pond_activation_data['activated_at'] = active_at
+        # else :
+        #     pond_activation_data['activated_at'] = request.form.get(
+        #                 "activated_at", datetime.datetime.now())
         
         pondActivation = PondActivation(**pond_activation_data).save()
         pondActivation_id = pondActivation.id
@@ -571,6 +579,7 @@ class PondActivationApi(Resource):
                 "salt": salt,
                 "calcium": calcium,
             }
+
             water_preparation = WaterPreparation(
                 **water_preparation_data).save()
         pond.update(**{"isActive": True,
@@ -732,6 +741,9 @@ class DeactivationRecapApi(Resource):
                 "fish_category": request.form.get('fish_category'),
                 "fish_price": request.form.get('fish_price'),
             }
+
+            three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)  # Approximating months as 30 days
+            body['created_at'] = three_months_ago
 
             DeactivationRecap(**body).save()
             res = {"message": "success add deactivation recap"}
