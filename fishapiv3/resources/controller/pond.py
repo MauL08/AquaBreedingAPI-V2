@@ -11,6 +11,7 @@ from mongoengine import ObjectIdField
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt_identity
 from bson.objectid import ObjectId
+from dateutil.relativedelta import relativedelta
 
 class PondsApi(Resource):
     @jwt_required()
@@ -184,7 +185,13 @@ class PondsApi(Resource):
                     "status": 'Tidak Aktif',
                     "height": request.form.get("height", None),
                     "build_at": request.form.get("build_at", None),
-                }    
+                }
+
+            three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+  # Approximating months as 30 days
+            body['created_at'] = three_months_ago    
+            body['build_at'] = three_months_ago    
+
             pond = Pond(**body).save()
             id = pond.id
             response = {"message": "success add pond", "id": checking_pond}

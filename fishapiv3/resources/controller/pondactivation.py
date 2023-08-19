@@ -10,6 +10,8 @@ from bson.json_util import dumps
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt_identity
 from bson.objectid import ObjectId
+from dateutil.relativedelta import relativedelta
+
 
 class PondsStatusApi(Resource):
     def get(self):
@@ -555,7 +557,8 @@ class PondActivationApi(Resource):
             pond_activation_data['created_at'] = datetime.datetime.strptime(active_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
             pond_activation_data['activated_at'] = datetime.datetime.strptime(active_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
         else :
-            three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)  # Approximating months as 30 days
+            three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+ # Approximating months as 30 days
             pond_activation_data['created_at'] = three_months_ago
             pond_activation_data['activated_at'] = three_months_ago
 
@@ -742,7 +745,8 @@ class DeactivationRecapApi(Resource):
                 "fish_price": request.form.get('fish_price'),
             }
 
-            three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)  # Approximating months as 30 days
+            three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+  # Approximating months as 30 days
             body['created_at'] = three_months_ago
 
             DeactivationRecap(**body).save()
