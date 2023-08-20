@@ -10,6 +10,7 @@ from bson.json_util import dumps
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt_identity
 from bson.objectid import ObjectId
+from dateutil.relativedelta import relativedelta
 
 
 class FeedHistorysApi(Resource):
@@ -106,6 +107,8 @@ class FeedHistorysApi(Resource):
             current_user = get_jwt_identity()
             farm = str(current_user['farm_id'])
 
+            theDate = request.form.get('created_at', None)
+
             body = {
                 "pond_id": pond_id,
                 "farm_id": farm,
@@ -114,6 +117,12 @@ class FeedHistorysApi(Resource):
                 "feed_dose": request.form.get("feed_dose", None),
                 "feed_history_time": feed_history_time
             }
+
+            if theDate != '':
+                body['created_at'] = datetime.datetime.strptime(theDate, "%Y-%m-%dT%H:%M:%S.%f %z") 
+            else :
+                three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+                body['created_at'] = three_months_ago
 
             # # update feed inventory table
             get_feed_by_id = FeedInventory.objects.get(id=request.form.get('fish_feed_id', None))

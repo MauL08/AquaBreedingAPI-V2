@@ -558,15 +558,8 @@ class PondActivationApi(Resource):
             pond_activation_data['activated_at'] = datetime.datetime.strptime(active_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
         else :
             three_months_ago = datetime.datetime.now() - relativedelta(months=3)
- # Approximating months as 30 days
             pond_activation_data['created_at'] = three_months_ago
             pond_activation_data['activated_at'] = three_months_ago
-
-        # if active_at != '':
-        #     pond_activation_data['activated_at'] = active_at
-        # else :
-        #     pond_activation_data['activated_at'] = request.form.get(
-        #                 "activated_at", datetime.datetime.now())
         
         pondActivation = PondActivation(**pond_activation_data).save()
         pondActivation_id = pondActivation.id
@@ -651,13 +644,15 @@ class PondDeactivationApi(Resource):
             print(data)
         print(total_fish_harvested)
         print(total_weight_harvested)
+        
+        deactivation_at = request.form.get("deactivated_at", datetime.datetime.now())
+
         # get args form data
         # update pond_activation
         pond_deactivation_data = {
             "isFinish": True,
             "total_fish_harvested": total_fish_harvested,
             "total_weight_harvested": total_weight_harvested,
-            "deactivated_at": request.form.get("deactivated_at", datetime.datetime.now()),
             "deactivated_description": "Normal",
             "amount_undersize_fish":amount_undersize,
             "amount_oversize_fish":amount_oversize,
@@ -666,6 +661,13 @@ class PondDeactivationApi(Resource):
             "sample_long":sample_long,
             "sample_weight": sample_weight
         }
+
+        if deactivation_at != '':
+            pond_deactivation_data['deactivation_at'] = datetime.datetime.strptime(deactivation_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
+        else :
+            three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+            pond_deactivation_data['deactivation_at'] = three_months_ago
+
         pond_activation.update(**pond_deactivation_data)
         # update pond isActive
         pond.update(**{"isActive": False,"status": "Panen"})
@@ -717,7 +719,6 @@ class DeactivationRecapApi(Resource):
             testing = DeactivationRecap.objects.aggregate(pipeline)
             temp = list(testing)
             
-
             response = json.dumps({
                 'status': 'success',
                 'data': temp,
@@ -734,6 +735,8 @@ class DeactivationRecapApi(Resource):
             current_user = get_jwt_identity()
             farm = str(current_user['farm_id'])
 
+            deactivation_at = request.form.get("deactivated_at", datetime.datetime.now())
+
             body = {
                 "pond_id": request.form.get('pond_id'),
                 "farm_id": farm,
@@ -745,9 +748,11 @@ class DeactivationRecapApi(Resource):
                 "fish_price": request.form.get('fish_price'),
             }
 
-            three_months_ago = datetime.datetime.now() - relativedelta(months=3)
-  # Approximating months as 30 days
-            body['created_at'] = three_months_ago
+            if deactivation_at != '':
+                body['created_at'] = datetime.datetime.strptime(deactivation_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
+            else :
+                three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+                body['created_at'] = three_months_ago
 
             DeactivationRecap(**body).save()
             res = {"message": "success add deactivation recap"}

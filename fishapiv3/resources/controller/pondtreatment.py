@@ -6,6 +6,8 @@ import json
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt_identity
 from bson.objectid import ObjectId
+from dateutil.relativedelta import relativedelta
+
 
 
 class PondTreatmentsApi(Resource):
@@ -80,6 +82,8 @@ class PondTreatmentsApi(Resource):
             farm = str(current_user['farm_id'])
             
             pond_id = request.form.get("pond_id", None)
+            theDate = request.form.get('created_at', None)
+
             pond = Pond.objects.get(id=pond_id)
             if pond['isActive'] == False:
                 response = {"message": "pond is not active"}
@@ -106,9 +110,19 @@ class PondTreatmentsApi(Resource):
                     "isFinish": True,
                     "total_fish_harvested": request.form.get("total_fish_harvested", None),
                     "total_weight_harvested": request.form.get("total_weight_harvested", None),
-                    "deactivated_at": request.form.get("deactivated_at", datetime.datetime.now()),
                     "deactivated_description": "karantina total"
                 }
+
+                if theDate != '':
+                    body['created_at'] = datetime.datetime.strptime(theDate, "%Y-%m-%dT%H:%M:%S.%f %z") 
+                    body['treatment_at'] = datetime.datetime.strptime(theDate, "%Y-%m-%dT%H:%M:%S.%f %z") 
+                    pond_deactivation_data['deactivation_at'] = datetime.datetime.strptime(theDate, "%Y-%m-%dT%H:%M:%S.%f %z") 
+                else :
+                    three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+                    body['created_at'] = three_months_ago
+                    body['treatment_at'] = three_months_ago
+                    pond_deactivation_data['deactivation_at'] = three_months_ago
+
                 pond_activation = PondActivation.objects(
                     pond_id=pond_id, isFinish=False).order_by('-activated_at').first()
                 pond_activation.update(**pond_deactivation_data)
@@ -133,6 +147,8 @@ class PondTreatmentsApi(Resource):
                 carb_id = request.form.get("carbon_id", None)
                 salt_id = request.form.get("salt_id", None)
 
+                theDate = request.form.get('created_at', None)
+
                 body = {
                     "pond_id": pond_id,
                     "farm_id": farm,
@@ -145,7 +161,6 @@ class PondTreatmentsApi(Resource):
                     "probiotic_culture": request.form.get("probiotic_culture", None),
                     "carbohydrate": request.form.get("carbohydrate", None),
                     "carbohydrate_type": request.form.get("carbohydrate_type", None),
-                    "treatment_at": request.form.get("treatment_at", datetime.datetime.now())
                 }
 
                 if prob_id != '':
@@ -165,6 +180,14 @@ class PondTreatmentsApi(Resource):
                     get_suplemen_by_salt = SuplemenInventory.objects.get(id=salt_id)
                     get_suplemen_by_salt.amount -= float(request.form.get("salt", None))
                     get_suplemen_by_salt.save()
+
+                if theDate != '':
+                    body['created_at'] = datetime.datetime.strptime(theDate, "%Y-%m-%dT%H:%M:%S.%f %z") 
+                    body['treatment_at'] = datetime.datetime.strptime(theDate, "%Y-%m-%dT%H:%M:%S.%f %z") 
+                else :
+                    three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+                    body['created_at'] = three_months_ago
+                    body['treatment_at'] = three_months_ago
 
                 pondtreatment = PondTreatment(**body).save()
                 id = pondtreatment.id

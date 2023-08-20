@@ -161,6 +161,9 @@ class PondsApi(Resource):
                 response = json.dumps(response, default=str)
                 return Response(response, mimetype="application/json", status=400)
             shape = request.form.get("shape", None)
+
+            build_at = request.form.get("build_at", None)
+
             if shape == "bundar":
                 body = {
                     "farm_id": farm,
@@ -171,7 +174,6 @@ class PondsApi(Resource):
                     "status": 'Tidak Aktif',
                     "diameter": request.form.get("diameter", None),
                     "height": request.form.get("height", None),
-                    "build_at": request.form.get("build_at", None),
                 }
             else :
                 body = {
@@ -184,13 +186,16 @@ class PondsApi(Resource):
                     "width": request.form.get("width", None),
                     "status": 'Tidak Aktif',
                     "height": request.form.get("height", None),
-                    "build_at": request.form.get("build_at", None),
                 }
 
-            three_months_ago = datetime.datetime.now() - relativedelta(months=3)
-  # Approximating months as 30 days
-            body['created_at'] = three_months_ago    
-            body['build_at'] = three_months_ago    
+            if build_at != '' :
+                body['build_at'] = datetime.datetime.strptime(build_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
+                body['created_at'] = datetime.datetime.strptime(build_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
+                
+            else :
+                three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+                body['created_at'] = three_months_ago    
+                body['build_at'] = three_months_ago
 
             pond = Pond(**body).save()
             id = pond.id
