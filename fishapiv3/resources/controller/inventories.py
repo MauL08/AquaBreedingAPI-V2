@@ -586,6 +586,7 @@ class SuplemenInventoryApi(Resource):
                 "max_expired_period": request.form.get('max_expired_period', None),
                 "image": request.form.get('image', None)
             }
+            print(body)
             inventory = SuplemenInventory.objects.get(id_int = int(id)).update(**body)
             response = {"message": "success update suplemen inventory", "data": body}
             response = json.dumps(response, default=str)
