@@ -2,7 +2,7 @@ from flask import Response, request
 from fishapiv3.database.models import *
 from flask_restful import Resource
 from fishapiv3.database.db import db
-from datetime import datetime
+import datetime
 import calendar
 from datetime import timedelta
 import json
@@ -133,6 +133,7 @@ class FeedHistorysApi(Resource):
             id = feedhistory.id
             return {'id': str(id), 'message': 'success input'}, 200
         except Exception as e:
+            print(str(e))
             response = {"message": str(e)}
             response = json.dumps(response, default=str)
             return Response(response, mimetype="application/json", status=400)
