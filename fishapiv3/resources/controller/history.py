@@ -122,7 +122,7 @@ class SeedHistoryApi(Resource):
             if theDate != '':
                 body['created_at'] = datetime.datetime.strptime(theDate, "%Y-%m-%dT%H:%M:%S.%f %z") 
             else :
-                three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+                three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)
   # Approximating months as 30 days
                 body['created_at'] = three_months_ago
 
@@ -261,7 +261,7 @@ class FeedFishHistoryApi(Resource):
             if theDate != '':
                 body['created_at'] = datetime.datetime.strptime(theDate, "%Y-%m-%dT%H:%M:%S.%f %z") 
             else :
-                three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+                three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)
   # Approximating months as 30 days
                 body['created_at'] = three_months_ago
 
@@ -406,7 +406,7 @@ class SuplemenHistoryApi(Resource):
             if theDate != '':
                 body['created_at'] = datetime.datetime.strptime(theDate, "%Y-%m-%dT%H:%M:%S.%f %z") 
             else :
-                three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+                three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)
   # Approximating months as 30 days
                 body['created_at'] = three_months_ago
 

@@ -118,7 +118,7 @@ class PondTreatmentsApi(Resource):
                     body['treatment_at'] = datetime.datetime.strptime(theDate, "%Y-%m-%dT%H:%M:%S.%f %z") 
                     pond_deactivation_data['deactivation_at'] = datetime.datetime.strptime(theDate, "%Y-%m-%dT%H:%M:%S.%f %z") 
                 else :
-                    three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+                    three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)
                     body['created_at'] = three_months_ago
                     body['treatment_at'] = three_months_ago
                     pond_deactivation_data['deactivation_at'] = three_months_ago
@@ -185,7 +185,7 @@ class PondTreatmentsApi(Resource):
                     body['created_at'] = datetime.datetime.strptime(theDate, "%Y-%m-%dT%H:%M:%S.%f %z") 
                     body['treatment_at'] = datetime.datetime.strptime(theDate, "%Y-%m-%dT%H:%M:%S.%f %z") 
                 else :
-                    three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+                    three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)
                     body['created_at'] = three_months_ago
                     body['treatment_at'] = three_months_ago
 

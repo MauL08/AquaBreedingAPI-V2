@@ -557,7 +557,7 @@ class PondActivationApi(Resource):
             pond_activation_data['created_at'] = datetime.datetime.strptime(active_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
             pond_activation_data['activated_at'] = datetime.datetime.strptime(active_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
         else :
-            three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+            three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)
             pond_activation_data['created_at'] = three_months_ago
             pond_activation_data['activated_at'] = three_months_ago
         
@@ -665,7 +665,7 @@ class PondDeactivationApi(Resource):
         if deactivation_at != '':
             pond_deactivation_data['deactivation_at'] = datetime.datetime.strptime(deactivation_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
         else :
-            three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+            three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)
             pond_deactivation_data['deactivation_at'] = three_months_ago
 
         pond_activation.update(**pond_deactivation_data)
@@ -751,7 +751,7 @@ class DeactivationRecapApi(Resource):
             if deactivation_at != '':
                 body['created_at'] = datetime.datetime.strptime(deactivation_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
             else :
-                three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+                three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)
                 body['created_at'] = three_months_ago
 
             DeactivationRecap(**body).save()

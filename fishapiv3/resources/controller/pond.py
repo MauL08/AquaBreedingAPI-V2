@@ -193,7 +193,7 @@ class PondsApi(Resource):
                 body['created_at'] = datetime.datetime.strptime(build_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
                 
             else :
-                three_months_ago = datetime.datetime.now() - relativedelta(months=3)
+                three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)
                 body['created_at'] = three_months_ago    
                 body['build_at'] = three_months_ago
 
