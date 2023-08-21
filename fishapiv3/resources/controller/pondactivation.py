@@ -608,6 +608,10 @@ class PondActivationApi(Resource):
 class PondDeactivationApi(Resource):
     def post(self, pond_id):
         pond = Pond.objects.get(id=pond_id)
+        deactivation_at = request.form.get("deactivated_at",None)
+
+        print(deactivation_at)
+
         if pond.isActive == False:
             response = {"message": "status pond is already not active"}
             response = json.dumps(response, default=str)
@@ -645,7 +649,6 @@ class PondDeactivationApi(Resource):
         print(total_fish_harvested)
         print(total_weight_harvested)
         
-        deactivation_at = request.form.get("deactivated_at", datetime.datetime.now())
 
         # get args form data
         # update pond_activation
@@ -663,10 +666,10 @@ class PondDeactivationApi(Resource):
         }
 
         if deactivation_at != '':
-            pond_deactivation_data['deactivation_at'] = datetime.datetime.strptime(deactivation_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
+            pond_deactivation_data['deactivated_at'] = datetime.datetime.strptime(deactivation_at, "%Y-%m-%dT%H:%M:%S.%f %z") 
         else :
             three_months_ago = datetime.datetime.now() - datetime.timedelta(days=3 * 30)
-            pond_deactivation_data['deactivation_at'] = three_months_ago
+            pond_deactivation_data['deactivated_at'] = three_months_ago
 
         pond_activation.update(**pond_deactivation_data)
         # update pond isActive
