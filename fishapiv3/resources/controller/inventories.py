@@ -208,6 +208,51 @@ class FeedInventoriesApi(Resource):
             }
             inventory = FeedInventory(**body).save()
             id = inventory.id
+            ## mengurangi jumlah item pakan di inventory seusai jumlah penggunaan
+            get_feed_by_id = FeedInventory.objects.get(id=request.form.get('fish_feed_id', None))
+            get_feed_by_id.amount -= float(request.form.get('feed_amount', None))
+            print("remaining amount = ", get_feed_by_id.amount)
+            get_feed_by_id.save()
+            
+            ##mengurangi jumlah suplemen probiotik di inventory
+            probsId = request.form.get('prob_id', None)
+            probsAmount = request.form.get('prob_amount', None)
+
+            if probsId != "" and probsAmount.replace(",", "") != "" and probsAmount.replace(",", "") != 0.0 : 
+                get_suplemen_by_prob = SuplemenInventory.objects.get(id=request.form.get('prob_id', None))
+                get_suplemen_by_prob.amount -= float(request.form.get("prob_amount", None))
+                get_suplemen_by_prob.save()
+            
+
+            ##mengurangi jumlah suplemen carbon di inventory
+            temp = request.form.get('carb_id', None)
+            carbsId = temp.split(" ")
+            print("temp", temp)
+            print("carbsid", carbsId)
+
+            tempAmount = request.form.get('carb_amount', None)
+            carbsAmount = tempAmount.split(" ")
+            if carbsId[0].replace(",", "") != "" and carbsAmount[0].replace(",", "") != "" and carbsAmount[0].replace(",", "") != 0.0:
+                get_suplemen_by_carb = SuplemenInventory.objects.get(id=carbsId[0].replace(",", "") )
+                get_suplemen_by_carb.amount -= float(carbsAmount[0].replace(",", ""))
+                get_suplemen_by_carb.save()
+            if carbsId[1].replace(",", "") != "" and carbsAmount[1].replace(",", "") != "" and carbsAmount[1].replace(",", "") != 0.0:
+                get_suplemen_by_carb = SuplemenInventory.objects.get(id=carbsId[1].replace(",", ""))
+                get_suplemen_by_carb.amount -= float(carbsAmount[1].replace(",", ""))
+                get_suplemen_by_carb.save()
+            if carbsId[2].replace(",", "") != "" and carbsAmount[2].replace(",", "") != "" and carbsAmount[2].replace(",", "") != 0.0:
+                get_suplemen_by_carb = SuplemenInventory.objects.get(id=carbsId[2].replace(",", ""))
+                get_suplemen_by_carb.amount -= float(carbsAmount[2].replace(",", ""))
+                get_suplemen_by_carb.save()
+            if carbsId[3].replace(",", "") != "" and carbsAmount[3].replace(",", "") != "" and carbsAmount[3].replace(",", "") != 0.0:
+                get_suplemen_by_carb = SuplemenInventory.objects.get(id=carbsId[3].replace(",", ""))
+                get_suplemen_by_carb.amount -= float(carbsAmount[3].replace(",", ""))
+                get_suplemen_by_carb.save()
+            if carbsId[4].replace(",", "") != "" and carbsAmount[4].replace(",", "") != "" and carbsAmount[4].replace(",", "") != 0.0:
+                get_suplemen_by_carb = SuplemenInventory.objects.get(id=carbsId[4].replace(",", ""))
+                get_suplemen_by_carb.amount -= float(carbsAmount[4].replace(",", ""))
+                get_suplemen_by_carb.save()
+
             res = {"message": "success add feed to inventory", "id": id, "data": body}
             response = json.dumps(res, default=str)
             return Response(response, mimetype="application/json", status=200)

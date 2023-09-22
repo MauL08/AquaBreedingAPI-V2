@@ -1,4 +1,4 @@
 SECRET_KEY='dev'
 DATABASE='semnasdb'
-MONGO_CON='mongodb://localhost:27017/'
+MONGO_CON='mongodb+srv://abdullahazzam130:<password>@aquabreedingv4.aj9pes1.mongodb.net/'
 UPLOAD_FOLDER = '/media'

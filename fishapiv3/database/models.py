@@ -91,26 +91,6 @@ class FishDeath(db.Document):
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 
-class FishTransfer(db.Document):
-    transfer_method_option = ("basah", "kering")
-    transfer_type_option = ("", "oversized_transfer", "undersized_transfer")
-
-    origin_pond_id = db.ReferenceField(Pond, required=True)
-    destination_pond_id = db.ReferenceField(Pond, required=True)
-    origin_activation_id = db.ReferenceField(PondActivation, required=True)
-    destination_activation_id = db.ReferenceField(
-        PondActivation, required=True)
-    # fish_grading_id = db.ObjectIdField(required=True, default=None)
-    transfer_type = db.StringField(choices=transfer_type_option, default="")
-    transfer_method = db.StringField(
-        required=True, choices=transfer_method_option)
-    sample_weight = db.FloatField(required=True)
-    sample_long = db.FloatField(default=None)
-    transfer_at = db.DateTimeField(default=datetime.datetime.now)
-    created_at = db.DateTimeField(default=datetime.datetime.now)
-    updated_at = db.DateTimeField(default=datetime.datetime.now)
-
-
 class SeedInventory(db.Document):
     id_int = db.SequenceField(required=True)
     farm_id = db.ReferenceField(Farm, required=True)
@@ -124,6 +104,29 @@ class SeedInventory(db.Document):
     price = db.IntField(required=True)
     total_price = db.IntField(required=True)
     image = db.StringField(required=True)
+    fish_origin_category = db.StringField()
+    # fish_added_date = db.DateTimeField(default=datetime.datetime.now)
+    created_at = db.DateTimeField(default=datetime.datetime.now)
+    updated_at = db.DateTimeField(default=datetime.datetime.now)
+
+class FishTransfer(db.Document):
+    transfer_method_option = ("basah", "kering")
+    transfer_type_option = ("", "oversized_transfer", "undersized_transfer")
+
+    origin_pond_id = db.ReferenceField(Pond, required=True)
+    destination_pond_id = db.ReferenceField(Pond, required=True)
+    origin_activation_id = db.ReferenceField(PondActivation, required=True)
+    destination_activation_id = db.ReferenceField(
+        PondActivation, required=True)
+    # fish_grading_id = db.ObjectIdField(required=True, default=None)
+    transfer_type = db.StringField(choices=transfer_type_option, default="")
+    fish_seed_id= db.ReferenceField(SeedInventory, required=True)
+    fish_category = db.StringField(required=True)
+    transfer_method = db.StringField(
+        required=True, choices=transfer_method_option)
+    sample_weight = db.FloatField(required=True)
+    sample_long = db.FloatField(default=None)
+    transfer_at = db.DateTimeField(default=datetime.datetime.now)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
@@ -228,7 +231,7 @@ class FeedName(db.Document):
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 class FeedInventory(db.Document):
-    feed_name_id = db.ReferenceField(FeedName, required=True)
+    feed_name_id = db.ReferenceField(FeedName, required=False)
     farm_id = db.ReferenceField(Farm, required=True)
     id_int = db.SequenceField(required=True)
     feed_category = db.StringField(required=True)
@@ -243,15 +246,15 @@ class FeedUsed(db.Document):
     farm_id = db.ReferenceField(Farm, required=True)
     original_amount = db.FloatField(required=True)
     usage = db.FloatField(required=True)
-    pond = db.StringField(required=True)
+    pond = db.StringField(required=False)
     created_at = db.DateTimeField(default=datetime.datetime.now)
     updated_at = db.DateTimeField(default=datetime.datetime.now)
 
 class FeedHistory(db.Document):
-    pond_id = db.ReferenceField(Pond, required=True)
+    pond_id = db.ReferenceField(Pond, required=False)
     fish_feed_id = db.ReferenceField(FeedInventory, required=True)
     farm_id = db.ReferenceField(Farm, required=True)
-    pond_activation_id = db.ReferenceField(PondActivation, required=True)
+    pond_activation_id = db.ReferenceField(PondActivation, required=False)
     feed_dose = db.FloatField(required=True)
     feed_history_time = db.DateTimeField(default=datetime.datetime.now)
     created_at = db.DateTimeField(default=datetime.datetime.now)

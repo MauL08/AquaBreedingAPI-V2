@@ -21,6 +21,7 @@ def create_app(test_config=None):
     app.config['JWT_BLACKLIST_ENABLED'] = True
     app.config['PROPAGATE_EXCEPTIONS'] = True
     app.config['MONGODB_SETTINGS'] = {'db':'fishapiv3', 'alias':'default'}
+    app.config['CONNECTION'] = 'pord_connection'
     jwt = JWTManager(app)
     app.config.from_pyfile('settings.cfg', silent=False)
 
